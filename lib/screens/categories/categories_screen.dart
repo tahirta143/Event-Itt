@@ -34,6 +34,16 @@ class CategoriesScreenBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final venueProvider = Provider.of<VenueProvider>(context);
 
+    if (venueProvider.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.brandPink),
+        ),
+      );
+    }
+
+    final categories = venueProvider.categories.where((c) => c.id != 'all').toList();
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       physics: const BouncingScrollPhysics(),
@@ -56,9 +66,9 @@ class CategoriesScreenBody extends StatelessWidget {
               mainAxisSpacing: 14,
               childAspectRatio: 0.95,
             ),
-            itemCount: venueProvider.categories.length,
+            itemCount: categories.length,
             itemBuilder: (context, index) {
-              final cat = venueProvider.categories[index];
+              final cat = categories[index];
               return GestureDetector(
                 onTap: () {
                   venueProvider.selectCategory(cat.title);
@@ -82,7 +92,15 @@ class CategoriesScreenBody extends StatelessWidget {
                       Expanded(
                         child: ClipRRect(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                          child: Image.network(cat.imageUrl, width: double.infinity, fit: BoxFit.cover),
+                          child: Image.network(
+                            cat.imageUrl,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: AppColors.brandPink.withOpacity(0.1),
+                              child: const Icon(Icons.category_rounded, color: AppColors.brandPink, size: 32),
+                            ),
+                          ),
                         ),
                       ),
                       Padding(
@@ -128,7 +146,18 @@ class CategoriesScreenBody extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(subCat.imageUrl, width: 60, height: 60, fit: BoxFit.cover),
+                      child: Image.network(
+                        subCat.imageUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: 60,
+                          height: 60,
+                          color: AppColors.brandPink.withOpacity(0.1),
+                          child: const Icon(Icons.category_rounded, color: AppColors.brandPink, size: 24),
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -137,7 +166,7 @@ class CategoriesScreenBody extends StatelessWidget {
                         children: [
                           Text(subCat.title, style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
                           const SizedBox(height: 4),
-                          Text('${subCat.count} Available Locations', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMedium)),
+                          Text('Available on EventITT', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMedium)),
                         ],
                       ),
                     ),
