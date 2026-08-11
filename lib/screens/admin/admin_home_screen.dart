@@ -12,9 +12,12 @@ import '../../widgets/custom_header/custom_header_widget.dart';
 import '../../widgets/custom_drawer/custom_drawer_widget.dart';
 import '../../widgets/floating_nav_bar/floating_nav_bar_widget.dart';
 import '../../screens/login/login_screen.dart';
+import 'admin_dashboard_screen.dart';
 import 'admin_bookings_screen.dart';
 import 'admin_vendors_screen.dart';
 import 'admin_customers_screen.dart';
+import 'admin_vendor_requests_screen.dart';
+import 'admin_contact_inbox_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -30,7 +33,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     FloatingNavItem(
       activeIcon: Icons.dashboard_customize_rounded,
       inactiveIcon: Icons.dashboard_customize_outlined,
-      label: 'Dashboard',
+      label: 'Home',
     ),
     FloatingNavItem(
       activeIcon: Icons.calendar_month_rounded,
@@ -80,6 +83,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       nav.setIndex(2);
     } else if (routeName == '/admin/customers') {
       nav.setIndex(3);
+    } else if (routeName == '/admin/requests') {
+      nav.setIndex(4);
+    } else if (routeName == '/admin/inbox') {
+      nav.setIndex(5);
     } else if (routeName == '/login') {
       _logout();
     }
@@ -106,19 +113,21 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
               Expanded(
                 child: IndexedStack(
-                  index: nav.currentIndex.clamp(0, 3),
+                  index: nav.currentIndex.clamp(0, 5),
                   children: const [
-                    _AdminDashboardBody(),
+                    AdminDashboardScreen(),
                     AdminBookingsScreen(),
                     AdminVendorsScreen(),
                     AdminCustomersScreen(),
+                    AdminVendorRequestsScreen(),
+                    AdminContactInboxScreen(),
                   ],
                 ),
               ),
             ],
           ),
 
-          // Floating Bottom Navigation Bar for Admin
+          // Floating Bottom Navigation Bar for Admin (Home, Bookings, Vendors, Customers)
           FloatingNavBarWidget(
             currentIndex: nav.currentIndex.clamp(0, 3),
             onTap: (index) => nav.setIndex(index),

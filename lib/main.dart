@@ -18,6 +18,8 @@ import 'providers/admin/admin_dashboard_provider.dart';
 import 'providers/admin/admin_bookings_provider.dart';
 import 'providers/admin/admin_vendors_provider.dart';
 import 'providers/admin/admin_customers_provider.dart';
+import 'providers/admin/admin_vendor_requests_provider.dart';
+import 'providers/admin/admin_contact_inbox_provider.dart';
 
 // Vendor providers
 import 'providers/vendor/vendor_portal_provider.dart';
@@ -83,6 +85,8 @@ class VenueVibeApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AdminBookingsProvider()),
         ChangeNotifierProvider(create: (_) => AdminVendorsProvider()),
         ChangeNotifierProvider(create: (_) => AdminCustomersProvider()),
+        ChangeNotifierProvider(create: (_) => AdminVendorRequestsProvider()),
+        ChangeNotifierProvider(create: (_) => AdminContactInboxProvider()),
 
         // ── Vendor API providers ──
         ChangeNotifierProvider(create: (_) => VendorPortalProvider()),

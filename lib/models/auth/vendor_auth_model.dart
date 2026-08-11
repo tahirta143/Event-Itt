@@ -1,13 +1,14 @@
-/// Vendor returned by POST /api/vendor/auth/login and GET /api/vendor/me.
+/// Vendor returned by POST /api/vendor/auth/login and GET /api/vendor/me and GET /api/vendors.
 class VendorAuthModel {
   final String id;
   final String name;
   final String email;
   final String businessName;
-  final String status;
+  final String status; // 'active', 'inactive'
   final String? logo;
   final String? phone;
   final String? description;
+  final String? address;
 
   const VendorAuthModel({
     required this.id,
@@ -18,18 +19,30 @@ class VendorAuthModel {
     this.logo,
     this.phone,
     this.description,
+    this.address,
   });
 
+  String get vendorName => name.isNotEmpty ? name : businessName;
+  String get vendorEmail => email;
+  String get businessAddress => address ?? description ?? '';
+  bool get isActive => status == 'active' || status == '1' || status == 'true';
+
   factory VendorAuthModel.fromJson(Map<String, dynamic> json) {
+    final active = json['is_active'];
+    final statusStr = active != null
+        ? (active == 1 || active == true || active == '1' ? 'active' : 'inactive')
+        : (json['status']?.toString() ?? 'active');
+
     return VendorAuthModel(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      email: json['email']?.toString() ?? '',
+      name: json['name']?.toString() ?? json['business_name']?.toString() ?? '',
+      email: json['email']?.toString() ?? json['contact_email']?.toString() ?? '',
       businessName: json['businessName']?.toString() ?? json['name']?.toString() ?? '',
-      status: json['status']?.toString() ?? 'active',
-      logo: json['logo']?.toString(),
-      phone: json['phone']?.toString(),
+      status: statusStr,
+      logo: json['logo']?.toString() ?? json['logo_url']?.toString(),
+      phone: json['phone']?.toString() ?? json['contact_phone']?.toString(),
       description: json['description']?.toString(),
+      address: json['address']?.toString() ?? json['business_address']?.toString(),
     );
   }
 
@@ -42,6 +55,7 @@ class VendorAuthModel {
         'logo': logo,
         'phone': phone,
         'description': description,
+        'address': address,
       };
 
   VendorAuthModel copyWith({
@@ -53,6 +67,7 @@ class VendorAuthModel {
     String? logo,
     String? phone,
     String? description,
+    String? address,
   }) {
     return VendorAuthModel(
       id: id ?? this.id,
@@ -63,6 +78,7 @@ class VendorAuthModel {
       logo: logo ?? this.logo,
       phone: phone ?? this.phone,
       description: description ?? this.description,
+      address: address ?? this.address,
     );
   }
 }

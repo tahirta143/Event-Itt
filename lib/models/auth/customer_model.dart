@@ -1,5 +1,5 @@
 /// Customer returned by POST /api/customer/auth/verify-otp
-/// and POST /api/customer/auth/login (demo).
+/// and GET /api/admin/customers.
 class CustomerModel {
   final String id;
   final String name;
@@ -12,6 +12,9 @@ class CustomerModel {
     required this.email,
     this.phone,
   });
+
+  String get customerName => name;
+  String get customerEmail => email;
 
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
     return CustomerModel(

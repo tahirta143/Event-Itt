@@ -58,7 +58,7 @@ class _DashboardOverviewScreenState extends State<DashboardOverviewScreen> {
             itemCount: dashboardProvider.stats.length,
             itemBuilder: (context, index) {
               final stat = dashboardProvider.stats[index];
-              return DashboardStatCardWidget(stat: stat);
+              return DashboardStatCardWidget.fromModel(stat);
             },
           ),
           const SizedBox(height: 24),

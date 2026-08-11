@@ -166,4 +166,60 @@ class ApiClient {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }
   }
+
+  Future<ApiResponse<dynamic>> multipartPost(
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileField = 'image',
+  }) async {
+    debugPrint('🌐 [API MULTIPART POST] $kBaseUrl$path | Fields: $fields | File: $filePath');
+    try {
+      final request = http.MultipartRequest('POST', _uri(path));
+      if (token != null && token!.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.fields.addAll(fields);
+      if (filePath != null && filePath.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath(fileField, filePath));
+      }
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 25));
+      final res = await http.Response.fromStream(streamedResponse);
+      debugPrint('✅ [API MULTIPART POST RESPONSE] Status: ${res.statusCode} for $path | Body: ${res.body}');
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        return ApiResponse.ok(_parse(res), res.statusCode);
+      }
+      return ApiResponse.err(_errorMessage(res), res.statusCode);
+    } catch (e, stack) {
+      return ApiResponse.err(_cleanError(e, stack), 0);
+    }
+  }
+
+  Future<ApiResponse<dynamic>> multipartPut(
+    String path, {
+    required Map<String, String> fields,
+    String? filePath,
+    String fileField = 'image',
+  }) async {
+    debugPrint('🌐 [API MULTIPART PUT] $kBaseUrl$path | Fields: $fields | File: $filePath');
+    try {
+      final request = http.MultipartRequest('PUT', _uri(path));
+      if (token != null && token!.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.fields.addAll(fields);
+      if (filePath != null && filePath.isNotEmpty) {
+        request.files.add(await http.MultipartFile.fromPath(fileField, filePath));
+      }
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 25));
+      final res = await http.Response.fromStream(streamedResponse);
+      debugPrint('✅ [API MULTIPART PUT RESPONSE] Status: ${res.statusCode} for $path | Body: ${res.body}');
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        return ApiResponse.ok(_parse(res), res.statusCode);
+      }
+      return ApiResponse.err(_errorMessage(res), res.statusCode);
+    } catch (e, stack) {
+      return ApiResponse.err(_cleanError(e, stack), 0);
+    }
+  }
 }

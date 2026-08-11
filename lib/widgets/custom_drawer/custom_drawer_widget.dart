@@ -181,6 +181,22 @@ class CustomDrawerWidget extends StatelessWidget {
                         onNavigationSelected('/admin/customers');
                       },
                     ),
+                    _buildDrawerItem(
+                      icon: Icons.assignment_turned_in_rounded,
+                      title: 'Vendor Requests',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onNavigationSelected('/admin/requests');
+                      },
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.mark_email_unread_rounded,
+                      title: 'Contact Inbox',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onNavigationSelected('/admin/inbox');
+                      },
+                    ),
                   ] else if (role == UserRole.vendor) ...[
                     _buildDrawerItem(
                       icon: Icons.dashboard_rounded,
