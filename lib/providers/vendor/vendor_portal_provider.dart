@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
+import '../../core/storage/secure_storage.dart';
 import '../../models/booking/booking_model.dart';
 
 /// Vendor portal provider — fetches everything a vendor needs.
@@ -55,6 +56,8 @@ class VendorPortalProvider extends ChangeNotifier {
   List<Map<String, dynamic>> get blackoutDates => _blackoutDates;
 
   Future<void> loadStats(String token) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     final client = ApiClient(token: token);
     final res = await client.get('/api/vendor/stats');
     if (res.success && res.data != null) {

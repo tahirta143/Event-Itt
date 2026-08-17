@@ -27,13 +27,13 @@ class _CustomerBookingsScreenState extends State<CustomerBookingsScreen> {
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'confirmed':
-        return const Color(0xFF2E7D32);
+        return AppColors.successGreen;
       case 'pending':
-        return const Color(0xFFE65100);
+        return AppColors.discountOrange;
       case 'cancelled':
         return Colors.red;
       case 'completed':
-        return const Color(0xFF1565C0);
+        return AppColors.primaryGold;
       default:
         return AppColors.textMedium;
     }
@@ -460,7 +460,7 @@ class _BookingFormModalState extends State<_BookingFormModal> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Booking request submitted successfully!'),
-          backgroundColor: Color(0xFF2E7D32),
+          backgroundColor: AppColors.successGreen,
         ),
       );
     } else {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
+import '../../core/storage/secure_storage.dart';
 import '../../models/booking/booking_model.dart';
 
 class WeddingEventModel {
@@ -61,6 +62,8 @@ class CustomerBookingsProvider extends ChangeNotifier {
   }
 
   Future<void> loadMyBookings(String token, {bool isSilent = false}) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     if (!isSilent) {
       _isLoading = true;
       _error = null;

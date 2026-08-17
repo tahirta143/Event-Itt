@@ -240,7 +240,7 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
                     children: [
                       CircleAvatar(
                         radius: 22,
-                        backgroundColor: const Color(0xFF2E7D32).withOpacity(0.12),
+                        backgroundColor: AppColors.successGreen.withOpacity(0.12),
                         child: Text(
                           c.customerName.isNotEmpty
                               ? c.customerName[0].toUpperCase()
@@ -248,7 +248,7 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
                           style: GoogleFonts.montserrat(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF2E7D32),
+                            color: AppColors.successGreen,
                           ),
                         ),
                       ),

@@ -178,19 +178,19 @@ class _VendorDashboardBody extends StatelessWidget {
                 label: 'Pending',
                 value: portal.pendingBookings.toString(),
                 icon: Icons.hourglass_top_rounded,
-                color: const Color(0xFFE65100),
+                color: AppColors.discountOrange,
               ),
               _VendorStatCard(
                 label: 'Confirmed',
                 value: portal.confirmedBookings.toString(),
                 icon: Icons.check_circle_rounded,
-                color: const Color(0xFF2E7D32),
+                color: AppColors.successGreen,
               ),
               _VendorStatCard(
                 label: 'Revenue',
                 value: 'Rs ${(portal.totalRevenue / 1000).toStringAsFixed(0)}K',
                 icon: Icons.payments_rounded,
-                color: const Color(0xFF6A1B9A),
+                color: AppColors.brandPink,
               ),
             ],
           ),
@@ -227,11 +227,11 @@ class _VendorDashboardBody extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1565C0).withOpacity(0.1),
+                        color: AppColors.primaryGold.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.room_service_rounded,
-                          color: Color(0xFF1565C0), size: 16),
+                          color: AppColors.primaryGold, size: 16),
                     ),
                     const SizedBox(width: 12),
                     Expanded(

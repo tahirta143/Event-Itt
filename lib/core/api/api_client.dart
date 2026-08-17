@@ -30,6 +30,9 @@ class ApiResponse<T> {
 class ApiClient {
   final String? token;
 
+  /// Global callback triggered whenever any authenticated request receives a 401 Unauthorized.
+  static void Function(String path, String error)? onUnauthorized;
+
   const ApiClient({this.token});
 
   Map<String, String> get _headers => {
@@ -48,16 +51,22 @@ class ApiClient {
     }
   }
 
-  String _errorMessage(http.Response response) {
+  String _errorMessage(http.Response response, [String? path]) {
+    String msg = 'Server error ${response.statusCode}';
     try {
       final body = jsonDecode(response.body);
-      final msg = body['error'] ?? body['message'] ?? 'Server error ${response.statusCode}';
+      msg = (body['error'] ?? body['message'] ?? msg).toString();
       debugPrint('❌ [API ERROR RESPONSE] Status: ${response.statusCode} | Error: $msg | Body: ${response.body}');
-      return msg.toString();
     } catch (_) {
       debugPrint('❌ [API ERROR RESPONSE] Status: ${response.statusCode} | Raw Body: ${response.body}');
-      return 'Server error ${response.statusCode}';
     }
+
+    if (response.statusCode == 401 && token != null && token!.isNotEmpty) {
+      if (onUnauthorized != null) {
+        onUnauthorized!(path ?? '', msg);
+      }
+    }
+    return msg;
   }
 
   String _cleanError(dynamic e, [StackTrace? stack]) {
@@ -93,7 +102,7 @@ class ApiClient {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
       }
-      return ApiResponse.err(_errorMessage(res), res.statusCode);
+      return ApiResponse.err(_errorMessage(res, path), res.statusCode);
     } catch (e, stack) {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }
@@ -111,7 +120,7 @@ class ApiClient {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
       }
-      return ApiResponse.err(_errorMessage(res), res.statusCode);
+      return ApiResponse.err(_errorMessage(res, path), res.statusCode);
     } catch (e, stack) {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }
@@ -129,7 +138,7 @@ class ApiClient {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
       }
-      return ApiResponse.err(_errorMessage(res), res.statusCode);
+      return ApiResponse.err(_errorMessage(res, path), res.statusCode);
     } catch (e, stack) {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }
@@ -147,7 +156,7 @@ class ApiClient {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
       }
-      return ApiResponse.err(_errorMessage(res), res.statusCode);
+      return ApiResponse.err(_errorMessage(res, path), res.statusCode);
     } catch (e, stack) {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }
@@ -161,7 +170,7 @@ class ApiClient {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
       }
-      return ApiResponse.err(_errorMessage(res), res.statusCode);
+      return ApiResponse.err(_errorMessage(res, path), res.statusCode);
     } catch (e, stack) {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }
@@ -189,7 +198,7 @@ class ApiClient {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
       }
-      return ApiResponse.err(_errorMessage(res), res.statusCode);
+      return ApiResponse.err(_errorMessage(res, path), res.statusCode);
     } catch (e, stack) {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }
@@ -217,7 +226,7 @@ class ApiClient {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
       }
-      return ApiResponse.err(_errorMessage(res), res.statusCode);
+      return ApiResponse.err(_errorMessage(res, path), res.statusCode);
     } catch (e, stack) {
       return ApiResponse.err(_cleanError(e, stack), 0);
     }

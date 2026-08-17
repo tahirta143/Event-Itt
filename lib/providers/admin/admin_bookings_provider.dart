@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
+import '../../core/storage/secure_storage.dart';
 import '../../models/booking/booking_model.dart';
 
 /// Admin bookings provider with pagination and search.
@@ -31,6 +32,8 @@ class AdminBookingsProvider extends ChangeNotifier {
     String? status,
     String? priority,
   }) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     _isLoading = true;
     _error = null;
     _currentPage = page;

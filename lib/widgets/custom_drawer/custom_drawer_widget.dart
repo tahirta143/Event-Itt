@@ -33,9 +33,9 @@ class CustomDrawerWidget extends StatelessWidget {
       case UserRole.admin:
         return AppColors.brandPink;
       case UserRole.vendor:
-        return const Color(0xFF1565C0);
+        return AppColors.primaryGold;
       case UserRole.customer:
-        return const Color(0xFF2E7D32);
+        return AppColors.successGreen;
       default:
         return AppColors.brandPink;
     }
@@ -132,7 +132,7 @@ class CustomDrawerWidget extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.inter(
                               fontSize: 11,
-                              color: Colors.white70,
+                              color: AppColors.textWhite.withOpacity(0.7),
                             ),
                           ),
                         ],

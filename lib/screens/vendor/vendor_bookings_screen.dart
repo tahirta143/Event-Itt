@@ -26,10 +26,10 @@ class _VendorBookingsScreenState extends State<VendorBookingsScreen> {
 
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
-      case 'confirmed': return const Color(0xFF2E7D32);
-      case 'pending': return const Color(0xFFE65100);
+      case 'confirmed': return AppColors.successGreen;
+      case 'pending': return AppColors.discountOrange;
       case 'cancelled': return Colors.red;
-      case 'completed': return const Color(0xFF1565C0);
+      case 'completed': return AppColors.primaryGold;
       default: return AppColors.textMedium;
     }
   }
@@ -126,7 +126,7 @@ class _VendorBookingsScreenState extends State<VendorBookingsScreen> {
                       children: [
                         _ActionButton(
                           label: '✓',
-                          color: const Color(0xFF2E7D32),
+                          color: AppColors.successGreen,
                           onPressed: () async {
                             await portal.updateBookingStatus(
                                 vendorAuth.token ?? '', booking.id, 'confirmed');

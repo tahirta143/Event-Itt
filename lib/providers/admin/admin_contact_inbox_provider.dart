@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
+import '../../core/storage/secure_storage.dart';
 
 class ContactInquiryModel {
   final String id;
@@ -58,6 +59,8 @@ class AdminContactInboxProvider extends ChangeNotifier {
   String get statusFilter => _statusFilter;
 
   Future<void> loadInbox(String token, {int page = 1, String? search, String? status}) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     _isLoading = true;
     _error = null;
     _currentPage = page;

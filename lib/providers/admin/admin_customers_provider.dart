@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
+import '../../core/storage/secure_storage.dart';
 import '../../models/auth/customer_model.dart';
 
 /// Admin customers provider with pagination and search.
@@ -21,6 +22,8 @@ class AdminCustomersProvider extends ChangeNotifier {
   String get searchQuery => _searchQuery;
 
   Future<void> loadCustomers(String token, {int page = 1, String? search}) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     _isLoading = true;
     _error = null;
     _currentPage = page;

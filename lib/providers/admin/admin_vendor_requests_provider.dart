@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
+import '../../core/storage/secure_storage.dart';
 
 class VendorRequestModel {
   final String id;
@@ -59,6 +60,8 @@ class AdminVendorRequestsProvider extends ChangeNotifier {
   String get searchQuery => _searchQuery;
 
   Future<void> loadRequests(String token, {String? status, String? search}) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     _isLoading = true;
     _error = null;
     if (status != null) _statusFilter = status;

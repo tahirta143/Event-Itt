@@ -255,7 +255,7 @@ class _AdminVendorRequestsScreenState extends State<AdminVendorRequestsScreen> {
                                 horizontal: 10, vertical: 3),
                             decoration: BoxDecoration(
                               color: req.status == 'approved'
-                                  ? const Color(0xFF2E7D32).withOpacity(0.12)
+                                  ? AppColors.successGreen.withOpacity(0.12)
                                   : req.status == 'rejected'
                                       ? Colors.red.withOpacity(0.12)
                                       : Colors.orange.withOpacity(0.12),
@@ -267,7 +267,7 @@ class _AdminVendorRequestsScreenState extends State<AdminVendorRequestsScreen> {
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                                 color: req.status == 'approved'
-                                    ? const Color(0xFF2E7D32)
+                                    ? AppColors.successGreen
                                     : req.status == 'rejected'
                                         ? Colors.red
                                         : Colors.orange,
@@ -309,7 +309,7 @@ class _AdminVendorRequestsScreenState extends State<AdminVendorRequestsScreen> {
                             Expanded(
                               child: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF2E7D32),
+                                  backgroundColor: AppColors.successGreen,
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),

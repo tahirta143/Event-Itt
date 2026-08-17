@@ -66,11 +66,49 @@ class SecureStorage {
   }
 
   // ---------------------------------------------------------------------------
+  // Validation & Sanitization Helpers
+  // ---------------------------------------------------------------------------
+
+  /// Checks whether a token is a dummy mock token (e.g. demo_admin_jwt_token_12345)
+  /// or invalid structure rather than a genuine 3-part JWT.
+  static bool isMockOrInvalidToken(String? token) {
+    if (token == null || token.trim().isEmpty) return true;
+    final clean = token.trim();
+    if (clean.startsWith('demo_') || clean.contains('_demo_') || clean.contains('jwt_token_')) {
+      return true;
+    }
+    // A standard JWT must have 3 dot-separated base64 segments
+    final parts = clean.split('.');
+    if (parts.length != 3) {
+      return true;
+    }
+    return false;
+  }
+
+  // ---------------------------------------------------------------------------
   // Admin
   // ---------------------------------------------------------------------------
 
-  Future<void> saveAdminToken(String token) async => _setString(_Keys.adminToken, token);
-  Future<String?> getAdminToken() async => _getString(_Keys.adminToken);
+  Future<void> saveAdminToken(String token) async {
+    if (isMockOrInvalidToken(token)) {
+      debugPrint('⚠️ [STORAGE] Refusing to persist mock/invalid admin token: $token');
+      await clearAdmin();
+      return;
+    }
+    await _setString(_Keys.adminToken, token);
+  }
+
+  Future<String?> getAdminToken() async {
+    final token = await _getString(_Keys.adminToken);
+    if (isMockOrInvalidToken(token)) {
+      if (token != null) {
+        debugPrint('🧹 [STORAGE] Purging legacy mock admin token from storage: $token');
+        await clearAdmin();
+      }
+      return null;
+    }
+    return token;
+  }
 
   Future<void> saveAdminUser(Map<String, dynamic> user) async =>
       _setString(_Keys.adminUser, jsonEncode(user));
@@ -94,8 +132,26 @@ class SecureStorage {
   // Vendor
   // ---------------------------------------------------------------------------
 
-  Future<void> saveVendorToken(String token) async => _setString(_Keys.vendorToken, token);
-  Future<String?> getVendorToken() async => _getString(_Keys.vendorToken);
+  Future<void> saveVendorToken(String token) async {
+    if (isMockOrInvalidToken(token)) {
+      debugPrint('⚠️ [STORAGE] Refusing to persist mock/invalid vendor token: $token');
+      await clearVendor();
+      return;
+    }
+    await _setString(_Keys.vendorToken, token);
+  }
+
+  Future<String?> getVendorToken() async {
+    final token = await _getString(_Keys.vendorToken);
+    if (isMockOrInvalidToken(token)) {
+      if (token != null) {
+        debugPrint('🧹 [STORAGE] Purging legacy mock vendor token from storage: $token');
+        await clearVendor();
+      }
+      return null;
+    }
+    return token;
+  }
 
   Future<void> saveVendorUser(Map<String, dynamic> vendor) async =>
       _setString(_Keys.vendorUser, jsonEncode(vendor));
@@ -119,8 +175,26 @@ class SecureStorage {
   // Customer
   // ---------------------------------------------------------------------------
 
-  Future<void> saveCustomerToken(String token) async => _setString(_Keys.customerToken, token);
-  Future<String?> getCustomerToken() async => _getString(_Keys.customerToken);
+  Future<void> saveCustomerToken(String token) async {
+    if (isMockOrInvalidToken(token)) {
+      debugPrint('⚠️ [STORAGE] Refusing to persist mock/invalid customer token: $token');
+      await clearCustomer();
+      return;
+    }
+    await _setString(_Keys.customerToken, token);
+  }
+
+  Future<String?> getCustomerToken() async {
+    final token = await _getString(_Keys.customerToken);
+    if (isMockOrInvalidToken(token)) {
+      if (token != null) {
+        debugPrint('🧹 [STORAGE] Purging legacy mock customer token from storage: $token');
+        await clearCustomer();
+      }
+      return null;
+    }
+    return token;
+  }
 
   Future<void> saveCustomerUser(Map<String, dynamic> customer) async =>
       _setString(_Keys.customerUser, jsonEncode(customer));

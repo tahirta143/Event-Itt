@@ -33,7 +33,7 @@ class AdminAuthProvider extends ChangeNotifier {
       _user = AdminUserModel.fromJson(savedUser);
       _state = AdminAuthState.authenticated;
       notifyListeners();
-      _refreshUser();
+      await _refreshUser();
     } else {
       _state = AdminAuthState.unauthenticated;
       notifyListeners();
@@ -57,76 +57,36 @@ class AdminAuthProvider extends ChangeNotifier {
       if (res.success && res.data != null) {
         final data = res.data as Map<String, dynamic>;
         _token = data['token']?.toString();
-        final userData = data['user'];
+        final userData = data['user'] as Map<String, dynamic>?;
         if (_token != null && userData != null) {
-          _user = AdminUserModel.fromJson(userData as Map<String, dynamic>);
+          _user = AdminUserModel.fromJson(userData);
           await _storage.saveAdminToken(_token!);
           await _storage.saveAdminUser(userData);
           _state = AdminAuthState.authenticated;
+          _errorMessage = null;
           notifyListeners();
           return null; // success
         }
       }
 
-      if (res.error != null && res.error!.isNotEmpty) {
-        if (isDemo || cleanEmail == 'admin@eventitt.com') {
-          return await _applyDemoAdminSession();
-        }
-        _state = AdminAuthState.error;
-        _errorMessage = res.error;
-        notifyListeners();
-        return _errorMessage;
-      }
+      _state = AdminAuthState.error;
+      _errorMessage = res.error ?? 'Invalid email or password.';
+      notifyListeners();
+      return _errorMessage;
     } catch (e) {
-      if (isDemo || cleanEmail == 'admin@eventitt.com') {
-        return await _applyDemoAdminSession();
-      }
       _state = AdminAuthState.error;
       _errorMessage = 'Network connection failed: $e';
       notifyListeners();
       return _errorMessage;
     }
-
-    if (isDemo || cleanEmail == 'admin@eventitt.com') {
-      return await _applyDemoAdminSession();
-    }
-
-    _state = AdminAuthState.error;
-    _errorMessage = 'Login failed. Please check your credentials.';
-    notifyListeners();
-    return _errorMessage;
-  }
-
-  Future<String?> _applyDemoAdminSession() async {
-    _token = 'demo_admin_jwt_token_12345';
-    _user = const AdminUserModel(
-      id: 'admin_demo_1',
-      name: 'Administrator',
-      email: 'admin@eventitt.com',
-      role: 'superadmin',
-      permissions: [
-        'admin',
-        'superadmin',
-        'bookings.view',
-        'bookings.create',
-        'bookings.edit',
-        'bookings.delete',
-        'bookings.confirm',
-        'vendors.view',
-        'vendors.edit',
-        'customers.view',
-        'dashboard'
-      ],
-    );
-    await _storage.saveAdminToken(_token!);
-    await _storage.saveAdminUser(_user!.toJson());
-    _state = AdminAuthState.authenticated;
-    notifyListeners();
-    return null;
   }
 
   Future<void> _refreshUser() async {
-    if (_token == null || _token == 'demo_admin_jwt_token_12345') return;
+    if (_token == null || SecureStorage.isMockOrInvalidToken(_token)) {
+      await logout();
+      return;
+    }
+
     final client = ApiClient(token: _token);
     final res = await client.get('/api/auth/me');
     if (res.success && res.data != null) {
@@ -136,10 +96,19 @@ class AdminAuthProvider extends ChangeNotifier {
         await _storage.saveAdminUser(data['user'] as Map<String, dynamic>);
         notifyListeners();
       }
+    } else if (res.statusCode == 401) {
+      debugPrint('⚠️ [ADMIN AUTH] Saved token rejected with 401 on /api/auth/me. Evicting session.');
+      await logout();
     }
   }
 
   bool hasPermission(String key) => _user?.hasPermission(key) ?? false;
+
+  void handleUnauthorized() {
+    if (_state == AdminAuthState.authenticated) {
+      logout();
+    }
+  }
 
   Future<void> logout() async {
     _token = null;

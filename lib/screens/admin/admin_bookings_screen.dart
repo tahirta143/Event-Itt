@@ -36,14 +36,14 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
   Color _statusColor(String status) {
     switch (status.toLowerCase()) {
       case 'confirmed':
-        return const Color(0xFF2E7D32);
+        return AppColors.successGreen;
       case 'pending':
-        return const Color(0xFFE65100);
+        return AppColors.discountOrange;
       case 'in_progress':
       case 'preparing':
-        return const Color(0xFF1565C0);
+        return AppColors.primaryGold;
       case 'completed':
-        return const Color(0xFF6A1B9A);
+        return AppColors.brandPink;
       case 'cancelled':
         return Colors.red;
       default:

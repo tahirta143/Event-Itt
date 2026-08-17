@@ -141,7 +141,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32).withOpacity(0.12),
+                  color: AppColors.successGreen.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -150,7 +150,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       width: 8,
                       height: 8,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF2E7D32),
+                        color: AppColors.successGreen,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -160,7 +160,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       style: GoogleFonts.montserrat(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2E7D32),
+                        color: AppColors.successGreen,
                       ),
                     ),
                   ],
@@ -255,21 +255,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               value: '$todayTotal',
               changePercentage: _formatCurrency(todayValue),
               icon: Icons.calendar_today_rounded,
-              color: const Color(0xFFC89B3C),
+              color: AppColors.primaryGold,
             ),
             DashboardStatCardWidget(
               title: 'Upcoming 7 Days',
               value: '${dash.upcomingCount}',
               changePercentage: '7 Days',
               icon: Icons.calendar_month_rounded,
-              color: const Color(0xFF0F6E56),
+              color: AppColors.successGreen,
             ),
             DashboardStatCardWidget(
               title: 'Overdue Follow-up',
               value: '${dash.overdueCount}',
               changePercentage: 'Action',
               icon: Icons.warning_amber_rounded,
-              color: const Color(0xFFB3261E),
+              color: Colors.red,
             ),
             DashboardStatCardWidget(
               title: 'Pending Bookings',
@@ -301,14 +301,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           value: '${dash.pendingBookings}',
           changePercentage: 'Active',
           icon: Icons.hourglass_top_rounded,
-          color: const Color(0xFFC89B3C),
+          color: AppColors.primaryGold,
         ),
         DashboardStatCardWidget(
           title: 'Needs Attention',
           value: '${dash.needsAttention.length}',
           changePercentage: 'Alert',
           icon: Icons.notification_important_rounded,
-          color: const Color(0xFF0F6E56),
+          color: AppColors.successGreen,
         ),
         DashboardStatCardWidget(
           title: 'Pipeline Value',
@@ -322,7 +322,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           value: '${dash.customersWithBookings}',
           changePercentage: 'Clients',
           icon: Icons.people_alt_rounded,
-          color: const Color(0xFF1565C0),
+          color: AppColors.primaryGold,
         ),
       ],
     );
@@ -452,7 +452,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               minHeight: 6,
               backgroundColor: Colors.red.withOpacity(0.2),
               valueColor:
-                  const AlwaysStoppedAnimation<Color>(Color(0xFF0F6E56)),
+                  const AlwaysStoppedAnimation<Color>(AppColors.successGreen),
             ),
           ),
           const SizedBox(height: 6),
@@ -462,7 +462,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               Text('$active Active ($pct%)',
                   style: GoogleFonts.inter(
                       fontSize: 10,
-                      color: const Color(0xFF0F6E56),
+                      color: AppColors.successGreen,
                       fontWeight: FontWeight.bold)),
               Text('$inactive Inactive',
                   style: GoogleFonts.inter(
@@ -508,7 +508,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFC89B3C).withOpacity(0.12),
+                      color: AppColors.primaryGold.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -516,7 +516,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       style: GoogleFonts.montserrat(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFFC89B3C)),
+                          color: AppColors.primaryGold),
                     ),
                   ),
                 ],
@@ -570,7 +570,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             Expanded(
                               child: ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0F6E56),
+                                  backgroundColor: AppColors.successGreen,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 6),
                                   shape: RoundedRectangleBorder(
@@ -720,11 +720,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           // Legend
           Row(
             children: [
-              _buildChartLegendItem('Pending', const Color(0xFFC89B3C)),
+              _buildChartLegendItem('Pending', AppColors.primaryGold),
               const SizedBox(width: 12),
-              _buildChartLegendItem('Confirmed', const Color(0xFF0F6E56)),
+              _buildChartLegendItem('Confirmed', AppColors.successGreen),
               const SizedBox(width: 12),
-              _buildChartLegendItem('Cancelled', const Color(0xFFB3261E)),
+              _buildChartLegendItem('Cancelled', Colors.red),
             ],
           ),
           const SizedBox(height: 20),
@@ -799,17 +799,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           barRods: [
                             BarChartRodData(
                                 toY: p,
-                                color: const Color(0xFFC89B3C),
+                                color: AppColors.primaryGold,
                                 width: 8,
                                 borderRadius: BorderRadius.circular(2)),
                             BarChartRodData(
                                 toY: c,
-                                color: const Color(0xFF0F6E56),
+                                color: AppColors.successGreen,
                                 width: 8,
                                 borderRadius: BorderRadius.circular(2)),
                             BarChartRodData(
                                 toY: r,
-                                color: const Color(0xFFB3261E),
+                                color: Colors.red,
                                 width: 8,
                                 borderRadius: BorderRadius.circular(2)),
                           ],
@@ -941,10 +941,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: status == 'confirmed'
-                                ? const Color(0xFF0F6E56).withOpacity(0.12)
+                                ? AppColors.successGreen.withOpacity(0.12)
                                 : status == 'cancelled'
                                     ? Colors.red.withOpacity(0.12)
-                                    : const Color(0xFFC89B3C).withOpacity(0.12),
+                                    : AppColors.primaryGold.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -953,10 +953,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                               color: status == 'confirmed'
-                                  ? const Color(0xFF0F6E56)
+                                  ? AppColors.successGreen
                                   : status == 'cancelled'
                                       ? Colors.red
-                                      : const Color(0xFFC89B3C),
+                                      : AppColors.primaryGold,
                             ),
                           ),
                         ),
@@ -976,8 +976,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         Expanded(
                           child: OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF0F6E56),
-                              side: const BorderSide(color: Color(0xFF0F6E56)),
+                              foregroundColor: AppColors.successGreen,
+                              side: const BorderSide(color: AppColors.successGreen),
                               padding: const EdgeInsets.symmetric(vertical: 4),
                             ),
                             onPressed: () => dash.updateBookingStatus(
@@ -1091,9 +1091,9 @@ class _EventCalendarWidgetState extends State<_EventCalendarWidget> {
   Color _statusDotColor(String? status) {
     switch (status?.toLowerCase()) {
       case 'confirmed':
-        return const Color(0xFF0F6E56);
+        return AppColors.successGreen;
       case 'pending':
-        return const Color(0xFFC89B3C);
+        return AppColors.primaryGold;
       case 'cancelled':
         return Colors.red;
       default:
@@ -1537,10 +1537,10 @@ class _EventCalendarWidgetState extends State<_EventCalendarWidget> {
                               horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: status == 'confirmed'
-                                ? const Color(0xFF0F6E56).withOpacity(0.12)
+                                ? AppColors.successGreen.withOpacity(0.12)
                                 : status == 'cancelled'
                                     ? Colors.red.withOpacity(0.12)
-                                    : const Color(0xFFC89B3C).withOpacity(0.12),
+                                    : AppColors.primaryGold.withOpacity(0.12),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -1549,10 +1549,10 @@ class _EventCalendarWidgetState extends State<_EventCalendarWidget> {
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                               color: status == 'confirmed'
-                                  ? const Color(0xFF0F6E56)
+                                  ? AppColors.successGreen
                                   : status == 'cancelled'
                                       ? Colors.red
-                                      : const Color(0xFFC89B3C),
+                                      : AppColors.primaryGold,
                             ),
                           ),
                         ),

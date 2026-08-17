@@ -46,7 +46,10 @@ import 'screens/vendor/vendor_services_screen.dart';
 import 'screens/customer/customer_home_screen.dart';
 import 'screens/customer/customer_bookings_screen.dart';
 
+import 'core/api/api_client.dart';
 import 'utils/theme/app_theme.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,6 +60,12 @@ void main() {
       statusBarBrightness: Brightness.dark,
     ),
   );
+
+  // Hook global 401 callback
+  ApiClient.onUnauthorized = (path, error) {
+    debugPrint('🚨 [UNAUTHORIZED 401] Protected request to $path failed: $error');
+  };
+
   runApp(const VenueVibeApp());
 }
 
@@ -95,6 +104,7 @@ class VenueVibeApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CustomerBookingsProvider()),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'EVENT ITT - Luxury Event Planner',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.luxuryTheme,

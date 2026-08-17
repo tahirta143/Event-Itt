@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
+import '../../core/storage/secure_storage.dart';
 import '../../models/auth/vendor_auth_model.dart';
 
 /// Admin vendors provider with pagination, search, subcategory assignment, update, and delete.
@@ -23,6 +24,8 @@ class AdminVendorsProvider extends ChangeNotifier {
   String get statusFilter => _statusFilter;
 
   Future<void> loadVendors(String token, {int page = 1, String? search, String? statusFilter}) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     _isLoading = true;
     _error = null;
     _currentPage = page;

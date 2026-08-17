@@ -33,7 +33,7 @@ class VendorAuthProvider extends ChangeNotifier {
       _vendor = VendorAuthModel.fromJson(savedVendor);
       _state = VendorAuthState.authenticated;
       notifyListeners();
-      _refreshVendor();
+      await _refreshVendor();
     } else {
       _state = VendorAuthState.unauthenticated;
       notifyListeners();
@@ -57,66 +57,36 @@ class VendorAuthProvider extends ChangeNotifier {
       if (res.success && res.data != null) {
         final data = res.data as Map<String, dynamic>;
         _token = data['token']?.toString();
-        final vendorData = data['vendor'];
+        final vendorData = data['vendor'] as Map<String, dynamic>?;
         if (_token != null && vendorData != null) {
-          _vendor = VendorAuthModel.fromJson(vendorData as Map<String, dynamic>);
+          _vendor = VendorAuthModel.fromJson(vendorData);
           await _storage.saveVendorToken(_token!);
           await _storage.saveVendorUser(vendorData);
           _state = VendorAuthState.authenticated;
+          _errorMessage = null;
           notifyListeners();
           return null; // success
         }
       }
 
-      if (res.error != null && res.error!.isNotEmpty) {
-        if (isDemo || cleanEmail == 'vendor@eventitt.com') {
-          return await _applyDemoVendorSession();
-        }
-        _state = VendorAuthState.error;
-        _errorMessage = res.error;
-        notifyListeners();
-        return _errorMessage;
-      }
+      _state = VendorAuthState.error;
+      _errorMessage = res.error ?? 'Invalid vendor credentials.';
+      notifyListeners();
+      return _errorMessage;
     } catch (e) {
-      if (isDemo || cleanEmail == 'vendor@eventitt.com') {
-        return await _applyDemoVendorSession();
-      }
       _state = VendorAuthState.error;
       _errorMessage = 'Network connection failed: $e';
       notifyListeners();
       return _errorMessage;
     }
-
-    if (isDemo || cleanEmail == 'vendor@eventitt.com') {
-      return await _applyDemoVendorSession();
-    }
-
-    _state = VendorAuthState.error;
-    _errorMessage = 'Login failed. Please check your credentials.';
-    notifyListeners();
-    return _errorMessage;
-  }
-
-  Future<String?> _applyDemoVendorSession() async {
-    _token = 'demo_vendor_jwt_token_12345';
-    _vendor = const VendorAuthModel(
-      id: 'vendor_demo_1',
-      name: 'Royal Weddings & Catering',
-      email: 'vendor@eventitt.com',
-      businessName: 'Royal Weddings & Catering',
-      status: 'active',
-      phone: '+92 300 1111111',
-      description: 'Luxury decor, stage setup, and gourmet wedding catering.',
-    );
-    await _storage.saveVendorToken(_token!);
-    await _storage.saveVendorUser(_vendor!.toJson());
-    _state = VendorAuthState.authenticated;
-    notifyListeners();
-    return null;
   }
 
   Future<void> _refreshVendor() async {
-    if (_token == null || _token == 'demo_vendor_jwt_token_12345') return;
+    if (_token == null || SecureStorage.isMockOrInvalidToken(_token)) {
+      await logout();
+      return;
+    }
+
     final client = ApiClient(token: _token);
     final res = await client.get('/api/vendor/me');
     if (res.success && res.data != null) {
@@ -126,6 +96,15 @@ class VendorAuthProvider extends ChangeNotifier {
         await _storage.saveVendorUser(data['vendor'] as Map<String, dynamic>);
         notifyListeners();
       }
+    } else if (res.statusCode == 401) {
+      debugPrint('⚠️ [VENDOR AUTH] Saved token rejected with 401 on /api/vendor/me. Evicting session.');
+      await logout();
+    }
+  }
+
+  void handleUnauthorized() {
+    if (_state == VendorAuthState.authenticated) {
+      logout();
     }
   }
 

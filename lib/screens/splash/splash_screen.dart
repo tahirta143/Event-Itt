@@ -3,6 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../utils/colors/app_colors.dart';
 import '../../utils/animations/app_animations.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth/auth_provider.dart';
+import '../../providers/auth/admin_auth_provider.dart';
+import '../../providers/auth/vendor_auth_provider.dart';
+import '../../providers/auth/customer_auth_provider.dart';
+import '../admin/admin_home_screen.dart';
+import '../vendor/vendor_home_screen.dart';
+import '../customer/customer_home_screen.dart';
 import '../onboarding/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -35,14 +43,50 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    // Auto navigate after 3.5 seconds
-    Future.delayed(const Duration(milliseconds: 3500), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          AppAnimations.fadeInRoute(const OnboardingScreen()),
-        );
-      }
-    });
+    _initializeAppAndNavigate();
+  }
+
+  Future<void> _initializeAppAndNavigate() async {
+    final startTime = DateTime.now();
+
+    try {
+      final auth = context.read<AuthProvider>();
+      final adminAuth = context.read<AdminAuthProvider>();
+      final vendorAuth = context.read<VendorAuthProvider>();
+      final customerAuth = context.read<CustomerAuthProvider>();
+
+      await auth.initializeRole(
+        adminAuth: adminAuth,
+        vendorAuth: vendorAuth,
+        customerAuth: customerAuth,
+      );
+    } catch (e) {
+      debugPrint('⚠️ [SPLASH] Error restoring auth session: $e');
+    }
+
+    final elapsed = DateTime.now().difference(startTime).inMilliseconds;
+    const minSplashDuration = 2200;
+    if (elapsed < minSplashDuration) {
+      await Future.delayed(Duration(milliseconds: minSplashDuration - elapsed));
+    }
+
+    if (!mounted) return;
+
+    final auth = context.read<AuthProvider>();
+    Widget nextScreen;
+    if (auth.currentRole == UserRole.admin) {
+      nextScreen = const AdminHomeScreen();
+    } else if (auth.currentRole == UserRole.vendor) {
+      nextScreen = const VendorHomeScreen();
+    } else if (auth.currentRole == UserRole.customer) {
+      nextScreen = const CustomerHomeScreen();
+    } else {
+      nextScreen = const OnboardingScreen();
+    }
+
+    Navigator.of(context).pushReplacement(
+      AppAnimations.fadeInRoute(nextScreen),
+    );
   }
 
   @override

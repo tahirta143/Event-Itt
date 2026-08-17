@@ -615,7 +615,7 @@ class _LoginScreenState extends State<LoginScreen> {
           label: '$buttonLabel ($demoEmail)',
           onPressed: () {
             _emailController.text = demoEmail;
-            _passwordController.text = 'Test@123';
+            _passwordController.text = isAdmin ? 'admin123' : 'Test@123';
             if (isAdmin) {
               _loginAdmin(isDemo: true);
             } else {

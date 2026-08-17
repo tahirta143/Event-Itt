@@ -272,7 +272,7 @@ class _AdminVendorsScreenState extends State<AdminVendorsScreen> {
                                         horizontal: 8, vertical: 3),
                                     decoration: BoxDecoration(
                                       color: v.isActive
-                                          ? const Color(0xFF2E7D32).withOpacity(0.12)
+                                          ? AppColors.successGreen.withOpacity(0.12)
                                           : Colors.red.withOpacity(0.12),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -282,7 +282,7 @@ class _AdminVendorsScreenState extends State<AdminVendorsScreen> {
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                         color: v.isActive
-                                            ? const Color(0xFF2E7D32)
+                                            ? AppColors.successGreen
                                             : Colors.red,
                                       ),
                                     ),
@@ -577,7 +577,7 @@ class _EditVendorModalState extends State<_EditVendorModal> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(isNew ? 'Vendor created successfully!' : 'Vendor updated successfully!'),
-          backgroundColor: const Color(0xFF2E7D32),
+          backgroundColor: AppColors.successGreen,
         ),
       );
     } else {

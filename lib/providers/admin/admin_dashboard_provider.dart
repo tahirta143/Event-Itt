@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/api/api_client.dart';
 
+import '../../core/storage/secure_storage.dart';
+
 /// Full Admin dashboard summary provider integrated with /api/dashboard/summary and /api/dashboard/calendar.
 class AdminDashboardProvider extends ChangeNotifier {
   bool _isLoading = false;
@@ -79,6 +81,11 @@ class AdminDashboardProvider extends ChangeNotifier {
   }
 
   Future<void> loadSummary(String token) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) {
+      debugPrint('⚠️ [DASHBOARD] Cannot load summary with invalid or mock token.');
+      return;
+    }
+
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -97,6 +104,8 @@ class AdminDashboardProvider extends ChangeNotifier {
   }
 
   Future<void> loadRecentBookings(String token) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     final client = ApiClient(token: token);
     final res = await client.get('/api/dashboard/recent-bookings');
     if (res.success && res.data != null) {
@@ -112,6 +121,8 @@ class AdminDashboardProvider extends ChangeNotifier {
   }
 
   Future<void> loadCalendar(String token, String start, String end) async {
+    if (SecureStorage.isMockOrInvalidToken(token)) return;
+
     _isLoadingCalendar = true;
     notifyListeners();
 

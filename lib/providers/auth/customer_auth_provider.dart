@@ -68,12 +68,16 @@ class CustomerAuthProvider extends ChangeNotifier {
         notifyListeners();
         return null;
       }
-    } catch (_) {}
-
-    // Advance to OTP input screen
-    _state = CustomerAuthState.otpSent;
-    notifyListeners();
-    return null;
+      _state = CustomerAuthState.error;
+      _errorMessage = res.error ?? 'Failed to request OTP.';
+      notifyListeners();
+      return _errorMessage;
+    } catch (e) {
+      _state = CustomerAuthState.error;
+      _errorMessage = 'Network connection failed: $e';
+      notifyListeners();
+      return _errorMessage;
+    }
   }
 
   Future<String?> verifyOtp(String code) async {
@@ -115,28 +119,23 @@ class CustomerAuthProvider extends ChangeNotifier {
           return null;
         }
       }
-    } catch (_) {}
 
-    // Fallback Customer OTP session
-    _token = 'demo_customer_jwt_token_12345';
-    final fallbackName = _pendingEmail!.split('@')[0];
-    _customer = CustomerModel(
-      id: 'customer_demo_${DateTime.now().millisecondsSinceEpoch}',
-      name: fallbackName.isNotEmpty
-          ? fallbackName[0].toUpperCase() + fallbackName.substring(1)
-          : 'Customer',
-      email: _pendingEmail!,
-      phone: '+92 300 0000000',
-    );
-    await _storage.saveCustomerToken(_token!);
-    await _storage.saveCustomerUser(_customer!.toJson());
-    _state = CustomerAuthState.authenticated;
-    notifyListeners();
-    return null;
+      _state = CustomerAuthState.error;
+      _errorMessage = res.error ?? 'Invalid verification code.';
+      notifyListeners();
+      return _errorMessage;
+    } catch (e) {
+      _state = CustomerAuthState.error;
+      _errorMessage = 'Verification error: $e';
+      notifyListeners();
+      return _errorMessage;
+    }
   }
 
   Future<String?> completeProfile(String name, {String? phone}) async {
-    _token ??= 'demo_customer_jwt_token_12345';
+    if (_token == null || SecureStorage.isMockOrInvalidToken(_token)) {
+      return 'Authentication required. Please request a new code.';
+    }
 
     _state = CustomerAuthState.loading;
     _errorMessage = null;
@@ -156,28 +155,25 @@ class CustomerAuthProvider extends ChangeNotifier {
         } else if (_customer != null) {
           _customer = _customer!.copyWith(name: name, phone: phone);
         }
-      } else {
-        _customer = CustomerModel(
-          id: 'customer_demo_profile',
-          name: name,
-          email: _pendingEmail ?? 'customer@eventitt.com',
-          phone: phone,
-        );
+        await _storage.saveCustomerToken(_token!);
+        if (_customer != null) {
+          await _storage.saveCustomerUser(_customer!.toJson());
+        }
+        _state = CustomerAuthState.authenticated;
+        notifyListeners();
+        return null;
       }
-    } catch (_) {
-      _customer = CustomerModel(
-        id: 'customer_demo_profile',
-        name: name,
-        email: _pendingEmail ?? 'customer@eventitt.com',
-        phone: phone,
-      );
-    }
 
-    await _storage.saveCustomerToken(_token!);
-    await _storage.saveCustomerUser(_customer!.toJson());
-    _state = CustomerAuthState.authenticated;
-    notifyListeners();
-    return null;
+      _state = CustomerAuthState.error;
+      _errorMessage = res.error ?? 'Failed to update profile.';
+      notifyListeners();
+      return _errorMessage;
+    } catch (e) {
+      _state = CustomerAuthState.error;
+      _errorMessage = 'Failed to update profile: $e';
+      notifyListeners();
+      return _errorMessage;
+    }
   }
 
   Future<String?> demoLogin(String email, String password) async {
@@ -204,25 +200,28 @@ class CustomerAuthProvider extends ChangeNotifier {
           await _storage.saveCustomerToken(_token!);
           await _storage.saveCustomerUser(_customer!.toJson());
           _state = CustomerAuthState.authenticated;
+          _errorMessage = null;
           notifyListeners();
           return null;
         }
       }
-    } catch (_) {}
 
-    // Demo fallback for customer
-    _token = 'demo_customer_jwt_token_12345';
-    _customer = const CustomerModel(
-      id: 'customer_demo_1',
-      name: 'Demo Customer',
-      email: 'customer@eventitt.com',
-      phone: '+92 300 0000000',
-    );
-    await _storage.saveCustomerToken(_token!);
-    await _storage.saveCustomerUser(_customer!.toJson());
-    _state = CustomerAuthState.authenticated;
-    notifyListeners();
-    return null;
+      _state = CustomerAuthState.error;
+      _errorMessage = res.error ?? 'Invalid customer credentials.';
+      notifyListeners();
+      return _errorMessage;
+    } catch (e) {
+      _state = CustomerAuthState.error;
+      _errorMessage = 'Customer login error: $e';
+      notifyListeners();
+      return _errorMessage;
+    }
+  }
+
+  void handleUnauthorized() {
+    if (_state == CustomerAuthState.authenticated) {
+      logout();
+    }
   }
 
   Future<String?> register({
