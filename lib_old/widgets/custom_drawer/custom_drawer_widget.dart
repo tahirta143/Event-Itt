@@ -182,22 +182,6 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.category_rounded,
-                      title: 'Setup Catalog · Categories',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed('/admin/setup/category');
-                      },
-                    ),
-                    _buildDrawerItem(
-                      icon: Icons.list_alt_rounded,
-                      title: 'Setup Catalog · Subcategories',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).pushNamed('/admin/setup/subcategory');
-                      },
-                    ),
-                    _buildDrawerItem(
                       icon: Icons.assignment_turned_in_rounded,
                       title: 'Vendor Requests',
                       onTap: () {

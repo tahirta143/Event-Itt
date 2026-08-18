@@ -20,8 +20,6 @@ import 'providers/admin/admin_vendors_provider.dart';
 import 'providers/admin/admin_customers_provider.dart';
 import 'providers/admin/admin_vendor_requests_provider.dart';
 import 'providers/admin/admin_contact_inbox_provider.dart';
-import 'providers/admin/admin_category_provider.dart';
-import 'providers/admin/admin_subcategory_provider.dart';
 
 // Vendor providers
 import 'providers/vendor/vendor_portal_provider.dart';
@@ -42,8 +40,6 @@ import 'screens/admin/admin_home_screen.dart';
 import 'screens/admin/admin_bookings_screen.dart';
 import 'screens/admin/admin_vendors_screen.dart';
 import 'screens/admin/admin_customers_screen.dart';
-import 'screens/admin/setup/admin_setup_category_screen.dart';
-import 'screens/admin/setup/admin_setup_subcategory_screen.dart';
 import 'screens/vendor/vendor_home_screen.dart';
 import 'screens/vendor/vendor_bookings_screen.dart';
 import 'screens/vendor/vendor_services_screen.dart';
@@ -100,8 +96,6 @@ class VenueVibeApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AdminCustomersProvider()),
         ChangeNotifierProvider(create: (_) => AdminVendorRequestsProvider()),
         ChangeNotifierProvider(create: (_) => AdminContactInboxProvider()),
-        ChangeNotifierProvider(create: (_) => AdminCategoryProvider()),
-        ChangeNotifierProvider(create: (_) => AdminSubcategoryProvider()),
 
         // ── Vendor API providers ──
         ChangeNotifierProvider(create: (_) => VendorPortalProvider()),
@@ -133,8 +127,6 @@ class VenueVibeApp extends StatelessWidget {
           '/admin/bookings': (context) => const AdminBookingsScreen(),
           '/admin/vendors': (context) => const AdminVendorsScreen(),
           '/admin/customers': (context) => const AdminCustomersScreen(),
-          '/admin/setup/category': (context) => const AdminSetupCategoryScreen(),
-          '/admin/setup/subcategory': (context) => const AdminSetupSubcategoryScreen(),
 
           // ── Vendor routes ──
           '/vendor/home': (context) => const VendorHomeScreen(),
