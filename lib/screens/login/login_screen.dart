@@ -734,7 +734,7 @@ class _LoginScreenState extends State<LoginScreen> {
             TextButton.icon(
               onPressed: () =>
                   setState(() => _otpStep = 'email'),
-              icon: const Icon(Icons.arrow_back_rounded,
+              icon: const Icon(Icons.arrow_back_outlined,
                   size: 14, color: Colors.white54),
               label: Text(
                 'Change email',

@@ -154,7 +154,7 @@ class _VenueCardWidgetState extends State<VenueCardWidget> {
                           Row(
                             children: [
                               const Icon(
-                                Icons.star_rounded,
+                                Icons.star_outline_rounded,
                                 color: AppColors.starRating,
                                 size: 18,
                               ),
@@ -217,7 +217,7 @@ class _VenueCardWidgetState extends State<VenueCardWidget> {
                         ],
                       ),
                       child: const Icon(
-                        Icons.ios_share_rounded,
+                        Icons.ios_share_outlined,
                         color: AppColors.textWhite,
                         size: 20,
                       ),

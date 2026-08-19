@@ -50,7 +50,7 @@ class CustomHeaderWidget extends StatelessWidget {
                 IconButton(
                   onPressed: onDrawerTap,
                   icon: const Icon(
-                    Icons.menu_rounded,
+                    Icons.menu_outlined,
                     color: AppColors.textWhite,
                     size: 26,
                   ),

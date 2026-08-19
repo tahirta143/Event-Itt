@@ -27,22 +27,22 @@ class FloatingNavBarWidget extends StatelessWidget {
 
   static const List<FloatingNavItem> _defaultItems = [
     FloatingNavItem(
-      activeIcon: Icons.home_rounded,
+      activeIcon: Icons.home_outlined,
       inactiveIcon: Icons.home_outlined,
       label: 'Home',
     ),
     FloatingNavItem(
-      activeIcon: Icons.analytics_rounded,
+      activeIcon: Icons.analytics_outlined,
       inactiveIcon: Icons.analytics_outlined,
       label: 'Analytics',
     ),
     FloatingNavItem(
-      activeIcon: Icons.room_service_rounded,
+      activeIcon: Icons.room_service_outlined,
       inactiveIcon: Icons.room_service_outlined,
       label: 'Services',
     ),
     FloatingNavItem(
-      activeIcon: Icons.category_rounded,
+      activeIcon: Icons.category_outlined,
       inactiveIcon: Icons.category_outlined,
       label: 'Categories',
     ),
@@ -81,13 +81,13 @@ class FloatingNavBarWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.cardWhite.withOpacity(0.2)
+                      ? Colors.white.withOpacity(0.15)
                       : Colors.transparent,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   isSelected ? item.activeIcon : item.inactiveIcon,
-                  color: isSelected ? AppColors.textWhite : AppColors.textLight,
+                  color: isSelected ? Colors.white : Colors.white60,
                   size: 22,
                 ),
               ),

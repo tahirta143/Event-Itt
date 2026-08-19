@@ -72,13 +72,13 @@ class _AdminVendorsScreenState extends State<AdminVendorsScreen> {
   Widget _buildFallbackAvatar(VendorAuthModel v) {
     return CircleAvatar(
       radius: 22,
-      backgroundColor: AppColors.brandPink.withOpacity(0.12),
+      backgroundColor: AppColors.textDark.withOpacity(0.04),
       child: Text(
         v.vendorName.isNotEmpty ? v.vendorName[0].toUpperCase() : 'V',
         style: GoogleFonts.montserrat(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: AppColors.brandPink,
+          color: AppColors.textDark,
         ),
       ),
     );
@@ -458,12 +458,12 @@ class _EditVendorModalState extends State<_EditVendorModal> {
                 ),
                 const SizedBox(height: 16),
                 ListTile(
-                  leading: const Icon(Icons.photo_library_rounded, color: AppColors.brandPink),
+                  leading: const Icon(Icons.photo_library_outlined, color: AppColors.brandPink),
                   title: const Text('Photo Gallery'),
                   onTap: () => Navigator.pop(ctx, ImageSource.gallery),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.camera_alt_rounded, color: AppColors.brandPink),
+                  leading: const Icon(Icons.camera_alt_outlined, color: AppColors.brandPink),
                   title: const Text('Camera'),
                   onTap: () => Navigator.pop(ctx, ImageSource.camera),
                 ),
@@ -661,7 +661,7 @@ class _EditVendorModalState extends State<_EditVendorModal> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(Icons.close_outlined),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -963,7 +963,7 @@ class _EditVendorModalState extends State<_EditVendorModal> {
                                     style: const TextStyle(fontSize: 11)),
                                 backgroundColor:
                                     AppColors.brandPink.withOpacity(0.1),
-                                deleteIcon: const Icon(Icons.close_rounded,
+                                deleteIcon: const Icon(Icons.close_outlined,
                                     size: 14, color: AppColors.brandPink),
                                 onDeleted: () {
                                   setState(() {

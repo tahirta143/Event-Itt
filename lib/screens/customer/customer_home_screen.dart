@@ -34,22 +34,22 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   static const List<FloatingNavItem> _navItems = [
     FloatingNavItem(
-      activeIcon: Icons.home_rounded,
+      activeIcon: Icons.home_outlined,
       inactiveIcon: Icons.home_outlined,
       label: 'Home',
     ),
     FloatingNavItem(
-      activeIcon: Icons.calendar_month_rounded,
+      activeIcon: Icons.calendar_month_outlined,
       inactiveIcon: Icons.calendar_month_outlined,
       label: 'Bookings',
     ),
     FloatingNavItem(
-      activeIcon: Icons.category_rounded,
+      activeIcon: Icons.category_outlined,
       inactiveIcon: Icons.category_outlined,
       label: 'Categories',
     ),
     FloatingNavItem(
-      activeIcon: Icons.room_service_rounded,
+      activeIcon: Icons.room_service_outlined,
       inactiveIcon: Icons.room_service_outlined,
       label: 'Services',
     ),
@@ -141,14 +141,56 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 // Customer Main Content — mirrors existing HomeScreen _HomeMainContent
 // ---------------------------------------------------------------------------
 
-class _CustomerMainContent extends StatelessWidget {
+class _CustomerMainContent extends StatefulWidget {
   const _CustomerMainContent();
+
+  @override
+  State<_CustomerMainContent> createState() => _CustomerMainContentState();
+}
+
+class _CustomerMainContentState extends State<_CustomerMainContent> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 300) {
+      final provider = context.read<VenueProvider>();
+      if (!provider.isLoadingMoreVenues &&
+          provider.currentVenuePage < provider.totalVenuePages) {
+        provider.fetchVenues(
+          page: provider.currentVenuePage + 1,
+          loadMore: true,
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final venueProvider = context.watch<VenueProvider>();
 
+    if (venueProvider.isLoading && venueProvider.venues.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.brandPink),
+        ),
+      );
+    }
+
     return CustomScrollView(
+      controller: _scrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
@@ -250,6 +292,20 @@ class _CustomerMainContent extends StatelessWidget {
             childCount: venueProvider.venues.length,
           ),
         ),
+
+        if (venueProvider.isLoadingMoreVenues)
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.brandPink),
+                ),
+              ),
+            ),
+          ),
+
         const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
     );

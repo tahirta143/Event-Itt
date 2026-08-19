@@ -137,7 +137,7 @@ class _AdminVendorRequestsScreenState extends State<AdminVendorRequestsScreen> {
                   ),
                   decoration: InputDecoration(
                     hintText: 'Search requests or vendor...',
-                    prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                    prefixIcon: const Icon(Icons.search_outlined, size: 20),
                     contentPadding: const EdgeInsets.symmetric(vertical: 10),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -186,7 +186,7 @@ class _AdminVendorRequestsScreenState extends State<AdminVendorRequestsScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.inbox_rounded,
+                  const Icon(Icons.inbox_outlined,
                       size: 48, color: AppColors.textLight),
                   const SizedBox(height: 12),
                   Text(
@@ -326,7 +326,7 @@ class _AdminVendorRequestsScreenState extends State<AdminVendorRequestsScreen> {
                                     );
                                   }
                                 },
-                                icon: const Icon(Icons.check_rounded, size: 16),
+                                icon: const Icon(Icons.check_outlined, size: 16),
                                 label: const Text('Approve'),
                               ),
                             ),
@@ -342,7 +342,7 @@ class _AdminVendorRequestsScreenState extends State<AdminVendorRequestsScreen> {
                                 ),
                                 onPressed: () =>
                                     _showRejectDialog(context, req.id),
-                                icon: const Icon(Icons.close_rounded, size: 16),
+                                icon: const Icon(Icons.close_outlined, size: 16),
                                 label: const Text('Reject'),
                               ),
                             ),

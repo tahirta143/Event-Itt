@@ -201,7 +201,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(width: 8),
               Row(
                 children: [
-                  const Icon(Icons.access_time_rounded,
+                  const Icon(Icons.access_time_outlined,
                       size: 16, color: AppColors.brandPink),
                   const SizedBox(width: 4),
                   Text(
@@ -254,29 +254,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               title: "Today's Events",
               value: '$todayTotal',
               changePercentage: _formatCurrency(todayValue),
-              icon: Icons.calendar_today_rounded,
-              color: AppColors.primaryGold,
+              icon: Icons.calendar_today_outlined,
             ),
             DashboardStatCardWidget(
               title: 'Upcoming 7 Days',
               value: '${dash.upcomingCount}',
               changePercentage: '7 Days',
-              icon: Icons.calendar_month_rounded,
-              color: AppColors.successGreen,
+              icon: Icons.calendar_month_outlined,
             ),
             DashboardStatCardWidget(
               title: 'Overdue Follow-up',
               value: '${dash.overdueCount}',
               changePercentage: 'Action',
-              icon: Icons.warning_amber_rounded,
-              color: Colors.red,
+              icon: Icons.warning_amber_outlined,
             ),
             DashboardStatCardWidget(
               title: 'Pending Bookings',
               value: '${dash.pendingBookings}',
               changePercentage: 'Pending',
-              icon: Icons.notifications_active_rounded,
-              color: AppColors.brandPink,
+              icon: Icons.notifications_active_outlined,
             ),
           ],
         ),
@@ -300,29 +296,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           title: 'Pending Bookings',
           value: '${dash.pendingBookings}',
           changePercentage: 'Active',
-          icon: Icons.hourglass_top_rounded,
-          color: AppColors.primaryGold,
+          icon: Icons.hourglass_top_outlined,
         ),
         DashboardStatCardWidget(
           title: 'Needs Attention',
           value: '${dash.needsAttention.length}',
           changePercentage: 'Alert',
-          icon: Icons.notification_important_rounded,
-          color: AppColors.successGreen,
+          icon: Icons.notification_important_outlined,
         ),
         DashboardStatCardWidget(
           title: 'Pipeline Value',
           value: _formatCurrency(dash.pipelineValue),
           changePercentage: 'Estimated',
-          icon: Icons.monetization_on_rounded,
-          color: AppColors.brandPink,
+          icon: Icons.monetization_on_outlined,
         ),
         DashboardStatCardWidget(
           title: 'Active Clients',
           value: '${dash.customersWithBookings}',
           changePercentage: 'Clients',
-          icon: Icons.people_alt_rounded,
-          color: AppColors.primaryGold,
+          icon: Icons.people_alt_outlined,
         ),
       ],
     );
@@ -578,7 +570,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 ),
                                 onPressed: () => dash.updateBookingStatus(
                                     token, id, 'confirmed'),
-                                icon: const Icon(Icons.check_rounded, size: 14),
+                                icon: const Icon(Icons.check_outlined, size: 14),
                                 label: const Text('Confirm',
                                     style: TextStyle(fontSize: 11)),
                               ),
@@ -595,7 +587,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 ),
                                 onPressed: () => dash.updateBookingStatus(
                                     token, id, 'cancelled'),
-                                icon: const Icon(Icons.close_rounded, size: 14),
+                                icon: const Icon(Icons.close_outlined, size: 14),
                                 label: const Text('Cancel',
                                     style: TextStyle(fontSize: 11)),
                               ),
@@ -982,7 +974,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             ),
                             onPressed: () => dash.updateBookingStatus(
                                 token, id, 'confirmed'),
-                            icon: const Icon(Icons.check_rounded, size: 14),
+                            icon: const Icon(Icons.check_outlined, size: 14),
                             label: const Text('Confirm',
                                 style: TextStyle(fontSize: 11)),
                           ),
@@ -997,7 +989,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             ),
                             onPressed: () => dash.updateBookingStatus(
                                 token, id, 'cancelled'),
-                            icon: const Icon(Icons.close_rounded, size: 14),
+                            icon: const Icon(Icons.close_outlined, size: 14),
                             label: const Text('Cancel',
                                 style: TextStyle(fontSize: 11)),
                           ),
@@ -1161,7 +1153,7 @@ class _EventCalendarWidgetState extends State<_EventCalendarWidget> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.chevron_left_rounded, size: 20),
+                          icon: const Icon(Icons.chevron_left_outlined, size: 20),
                           onPressed: () => _navigateMonth(-1),
                           constraints: const BoxConstraints(),
                           padding: const EdgeInsets.all(4),
@@ -1175,7 +1167,7 @@ class _EventCalendarWidgetState extends State<_EventCalendarWidget> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.chevron_right_rounded, size: 20),
+                          icon: const Icon(Icons.chevron_right_outlined, size: 20),
                           onPressed: () => _navigateMonth(1),
                           constraints: const BoxConstraints(),
                           padding: const EdgeInsets.all(4),

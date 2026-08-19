@@ -112,8 +112,9 @@ class CustomDrawerWidget extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 10, vertical: 3),
                           decoration: BoxDecoration(
-                            color: badgeColor,
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white.withOpacity(0.5)),
                           ),
                           child: Text(
                             _getBadgeLabel(role),
@@ -150,7 +151,7 @@ class CustomDrawerWidget extends StatelessWidget {
                 children: [
                   if (role == UserRole.admin) ...[
                     _buildDrawerItem(
-                      icon: Icons.dashboard_customize_rounded,
+                      icon: Icons.dashboard_customize_outlined,
                       title: 'Dashboard Overview',
                       onTap: () {
                         Navigator.pop(context);
@@ -158,7 +159,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.calendar_month_rounded,
+                      icon: Icons.calendar_month_outlined,
                       title: 'Bookings Management',
                       onTap: () {
                         Navigator.pop(context);
@@ -166,7 +167,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.storefront_rounded,
+                      icon: Icons.storefront_outlined,
                       title: 'Vendors Directory',
                       onTap: () {
                         Navigator.pop(context);
@@ -174,7 +175,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.people_rounded,
+                      icon: Icons.people_outline_rounded,
                       title: 'Customer Accounts',
                       onTap: () {
                         Navigator.pop(context);
@@ -182,23 +183,23 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.category_rounded,
+                      icon: Icons.category_outlined,
                       title: 'Setup Catalog · Categories',
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.of(context).pushNamed('/admin/setup/category');
+                        onNavigationSelected('/admin/categories');
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.list_alt_rounded,
+                      icon: Icons.list_alt_outlined,
                       title: 'Setup Catalog · Subcategories',
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.of(context).pushNamed('/admin/setup/subcategory');
+                        onNavigationSelected('/admin/subcategories');
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.assignment_turned_in_rounded,
+                      icon: Icons.assignment_turned_in_outlined,
                       title: 'Vendor Requests',
                       onTap: () {
                         Navigator.pop(context);
@@ -206,7 +207,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.mark_email_unread_rounded,
+                      icon: Icons.mark_email_unread_outlined,
                       title: 'Contact Inbox',
                       onTap: () {
                         Navigator.pop(context);
@@ -215,7 +216,7 @@ class CustomDrawerWidget extends StatelessWidget {
                     ),
                   ] else if (role == UserRole.vendor) ...[
                     _buildDrawerItem(
-                      icon: Icons.dashboard_rounded,
+                      icon: Icons.dashboard_outlined,
                       title: 'Vendor Portal Dashboard',
                       onTap: () {
                         Navigator.pop(context);
@@ -223,7 +224,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.calendar_month_rounded,
+                      icon: Icons.calendar_month_outlined,
                       title: 'Booking Requests',
                       onTap: () {
                         Navigator.pop(context);
@@ -231,7 +232,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.room_service_rounded,
+                      icon: Icons.room_service_outlined,
                       title: 'My Listed Services',
                       onTap: () {
                         Navigator.pop(context);
@@ -240,7 +241,7 @@ class CustomDrawerWidget extends StatelessWidget {
                     ),
                   ] else ...[
                     _buildDrawerItem(
-                      icon: Icons.home_rounded,
+                      icon: Icons.home_outlined,
                       title: 'Home & Featured Venues',
                       onTap: () {
                         Navigator.pop(context);
@@ -248,7 +249,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.calendar_month_rounded,
+                      icon: Icons.calendar_month_outlined,
                       title: 'My Bookings',
                       onTap: () {
                         Navigator.pop(context);
@@ -256,7 +257,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.category_rounded,
+                      icon: Icons.category_outlined,
                       title: 'Categories',
                       onTap: () {
                         Navigator.pop(context);
@@ -264,7 +265,7 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.room_service_rounded,
+                      icon: Icons.room_service_outlined,
                       title: 'Services',
                       onTap: () {
                         Navigator.pop(context);
@@ -291,16 +292,16 @@ class CustomDrawerWidget extends StatelessWidget {
                 onTap: () => _handleLogout(context, authProvider),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: const BorderSide(color: AppColors.brandPink),
+                  side: BorderSide(color: AppColors.textDark.withOpacity(0.1)),
                 ),
-                tileColor: AppColors.brandPink.withOpacity(0.08),
-                leading: const Icon(Icons.logout_rounded, color: AppColors.brandPink),
+                tileColor: AppColors.textDark.withOpacity(0.04),
+                leading: const Icon(Icons.logout_outlined, color: AppColors.textDark),
                 title: Text(
                   'Sign Out',
                   style: GoogleFonts.montserrat(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.brandPink,
+                    color: AppColors.textDark,
                   ),
                 ),
               ),
@@ -319,7 +320,7 @@ class CustomDrawerWidget extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      leading: Icon(icon, color: AppColors.brandPink, size: 22),
+      leading: Icon(icon, color: AppColors.textDark, size: 22),
       title: Text(
         title,
         style: GoogleFonts.montserrat(

@@ -26,17 +26,17 @@ class _VendorHomeScreenState extends State<VendorHomeScreen> {
 
   static const List<FloatingNavItem> _navItems = [
     FloatingNavItem(
-      activeIcon: Icons.dashboard_rounded,
+      activeIcon: Icons.dashboard_outlined,
       inactiveIcon: Icons.dashboard_outlined,
       label: 'Dashboard',
     ),
     FloatingNavItem(
-      activeIcon: Icons.calendar_month_rounded,
+      activeIcon: Icons.calendar_month_outlined,
       inactiveIcon: Icons.calendar_month_outlined,
       label: 'Bookings',
     ),
     FloatingNavItem(
-      activeIcon: Icons.room_service_rounded,
+      activeIcon: Icons.room_service_outlined,
       inactiveIcon: Icons.room_service_outlined,
       label: 'My Services',
     ),
@@ -171,25 +171,25 @@ class _VendorDashboardBody extends StatelessWidget {
               _VendorStatCard(
                 label: 'Total Bookings',
                 value: portal.totalBookings.toString(),
-                icon: Icons.calendar_month_rounded,
+                icon: Icons.calendar_month_outlined,
                 color: AppColors.brandPink,
               ),
               _VendorStatCard(
                 label: 'Pending',
                 value: portal.pendingBookings.toString(),
-                icon: Icons.hourglass_top_rounded,
+                icon: Icons.hourglass_top_outlined,
                 color: AppColors.discountOrange,
               ),
               _VendorStatCard(
                 label: 'Confirmed',
                 value: portal.confirmedBookings.toString(),
-                icon: Icons.check_circle_rounded,
+                icon: Icons.check_circle_outlined,
                 color: AppColors.successGreen,
               ),
               _VendorStatCard(
                 label: 'Revenue',
                 value: 'Rs ${(portal.totalRevenue / 1000).toStringAsFixed(0)}K',
-                icon: Icons.payments_rounded,
+                icon: Icons.payments_outlined,
                 color: AppColors.brandPink,
               ),
             ],
@@ -230,7 +230,7 @@ class _VendorDashboardBody extends StatelessWidget {
                         color: AppColors.primaryGold.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.room_service_rounded,
+                      child: const Icon(Icons.room_service_outlined,
                           color: AppColors.primaryGold, size: 16),
                     ),
                     const SizedBox(width: 12),

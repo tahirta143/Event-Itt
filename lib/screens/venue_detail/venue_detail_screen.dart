@@ -115,7 +115,7 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.star_rounded, color: AppColors.starRating, size: 18),
+                                  const Icon(Icons.star_outline_rounded, color: AppColors.starRating, size: 18),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${widget.venue.rating} (${widget.venue.reviewsCount})',
@@ -194,14 +194,14 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                 CircleAvatar(
                   backgroundColor: Colors.black.withOpacity(0.4),
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back_outlined, color: Colors.white),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
                 CircleAvatar(
                   backgroundColor: Colors.black.withOpacity(0.4),
                   child: Icon(
-                    widget.venue.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    widget.venue.isFavorite ? Icons.favorite_rounded : Icons.favorite_border_outlined,
                     color: widget.venue.isFavorite ? AppColors.softCoral : Colors.white,
                   ),
                 ),

@@ -6,18 +6,23 @@ import '../../models/subcategory/subcategory_model.dart';
 import '../../utils/mock_data/mock_data.dart';
 
 class VenueProvider extends ChangeNotifier {
-  List<VenueModel> _venues = List.from(MockData.venues);
-  List<CategoryModel> _categories = List.from(MockData.categories);
-  List<SubCategoryModel> _subCategories = List.from(MockData.subCategories);
+  List<VenueModel> _venues = [];
+  List<CategoryModel> _categories = [];
+  List<SubCategoryModel> _subCategories = [];
 
   bool _isLoading = false;
+  bool _isLoadingMoreVenues = false;
   String? _error;
+
+  int _currentVenuePage = 1;
+  int _totalVenuePages = 1;
 
   String _searchQuery = '';
   String _selectedCategoryTitle = 'All';
   String _selectedSubCategoryTitle = 'All';
 
   bool get isLoading => _isLoading;
+  bool get isLoadingMoreVenues => _isLoadingMoreVenues;
   String? get error => _error;
 
   List<VenueModel> get venues {
@@ -39,17 +44,33 @@ class VenueProvider extends ChangeNotifier {
   String get searchQuery => _searchQuery;
   String get selectedCategoryTitle => _selectedCategoryTitle;
   String get selectedSubCategoryTitle => _selectedSubCategoryTitle;
+  int get currentVenuePage => _currentVenuePage;
+  int get totalVenuePages => _totalVenuePages;
 
-  /// Fetches real categories, subcategories, and vendors/venues from the live API.
+  /// Main entry point to fetch initial public data
   Future<void> fetchPublicData() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    final client = ApiClient();
+    // Start both concurrently
+    final catTask = fetchCategories();
+    final venTask = fetchVenues(page: 1);
 
+    // We don't use Future.wait here because we want 
+    // fetchCategories and fetchVenues to notify listeners 
+    // independently as they finish.
+    await catTask;
+    await venTask;
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Fetches real categories & subcategories from the live API.
+  Future<void> fetchCategories() async {
+    final client = ApiClient();
     try {
-      // 1. Fetch real categories & subcategories from /api/public/categories
       final catRes = await client.get('/api/public/categories');
       if (catRes.success && catRes.data != null) {
         final List<dynamic> catList = catRes.data is List ? catRes.data : [];
@@ -86,21 +107,43 @@ class VenueProvider extends ChangeNotifier {
             }
           }
         }
-
-        if (parsedCategories.length > 1) {
-          _categories = parsedCategories;
-        }
-        if (parsedSubCategories.isNotEmpty) {
-          _subCategories = parsedSubCategories;
-        }
+        _categories = parsedCategories;
+        _subCategories = parsedSubCategories;
+        notifyListeners();
       }
+    } catch (e) {
+      debugPrint('❌ [VenueProvider] Error fetching categories: $e');
+    }
+  }
 
-      // 2. Fetch real vendors/venues from /api/public/vendors
-      final vendorRes = await client.get('/api/public/vendors');
+  /// Fetches real vendors/venues with pagination support.
+  Future<void> fetchVenues({int page = 1, bool loadMore = false}) async {
+    if (loadMore) {
+      if (_isLoadingMoreVenues || _currentVenuePage >= _totalVenuePages) return;
+      _isLoadingMoreVenues = true;
+    } else {
+      _currentVenuePage = page;
+      // Don't clear venues immediately if we are just refreshing, 
+      // but let fetchPublicData handle the main loader.
+    }
+    notifyListeners();
+
+    final client = ApiClient();
+    try {
+      final vendorRes = await client.get('/api/public/vendors?page=$page&limit=10');
       if (vendorRes.success && vendorRes.data != null) {
-        final List<dynamic> vendorList = vendorRes.data is List ? vendorRes.data : [];
-        final List<VenueModel> parsedVenues = [];
+        final data = vendorRes.data;
+        List<dynamic> vendorList = [];
+        
+        if (data is Map<String, dynamic>) {
+          vendorList = (data['rows'] ?? data['vendors'] ?? data['data'] ?? []) as List;
+          _totalVenuePages = int.tryParse((data['totalPages'] ?? data['total_pages'] ?? '1').toString()) ?? 1;
+        } else if (data is List) {
+          vendorList = data;
+          _totalVenuePages = 1;
+        }
 
+        final List<VenueModel> parsedVenues = [];
         for (var v in vendorList) {
           if (v is Map<String, dynamic>) {
             final logo = v['logo_url']?.toString() ?? '';
@@ -128,14 +171,18 @@ class VenueProvider extends ChangeNotifier {
           }
         }
 
-        if (parsedVenues.isNotEmpty) {
+        if (loadMore) {
+          _venues.addAll(parsedVenues);
+          _currentVenuePage++;
+        } else {
           _venues = parsedVenues;
         }
       }
     } catch (e) {
-      _error = 'Failed to load public data: $e';
+      debugPrint('❌ [VenueProvider] Error fetching venues: $e');
+      if (!loadMore) _error = 'Failed to load venues: $e';
     } finally {
-      _isLoading = false;
+      _isLoadingMoreVenues = false;
       notifyListeners();
     }
   }

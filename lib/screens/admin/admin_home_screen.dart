@@ -16,6 +16,7 @@ import 'admin_dashboard_screen.dart';
 import 'admin_bookings_screen.dart';
 import 'admin_vendors_screen.dart';
 import 'admin_customers_screen.dart';
+import 'setup/admin_catalog_management_screen.dart';
 import 'admin_vendor_requests_screen.dart';
 import 'admin_contact_inbox_screen.dart';
 
@@ -31,22 +32,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
 
   static const List<FloatingNavItem> _navItems = [
     FloatingNavItem(
-      activeIcon: Icons.dashboard_customize_rounded,
+      activeIcon: Icons.dashboard_customize_outlined,
       inactiveIcon: Icons.dashboard_customize_outlined,
       label: 'Home',
     ),
     FloatingNavItem(
-      activeIcon: Icons.calendar_month_rounded,
+      activeIcon: Icons.calendar_month_outlined,
       inactiveIcon: Icons.calendar_month_outlined,
       label: 'Bookings',
     ),
     FloatingNavItem(
-      activeIcon: Icons.storefront_rounded,
+      activeIcon: Icons.storefront_outlined,
       inactiveIcon: Icons.storefront_outlined,
       label: 'Vendors',
     ),
     FloatingNavItem(
-      activeIcon: Icons.people_rounded,
+      activeIcon: Icons.people_outline_rounded,
       inactiveIcon: Icons.people_outline_rounded,
       label: 'Customers',
     ),
@@ -87,6 +88,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
       nav.setIndex(4);
     } else if (routeName == '/admin/inbox') {
       nav.setIndex(5);
+    } else if (routeName == '/admin/categories') {
+      nav.setIndex(6); // Unified slot with initial tab 0
+    } else if (routeName == '/admin/subcategories') {
+      nav.setIndex(7); // Unified slot with initial tab 1
     } else if (routeName == '/login') {
       _logout();
     }
@@ -113,7 +118,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
               Expanded(
                 child: IndexedStack(
-                  index: nav.currentIndex.clamp(0, 5),
+                  index: nav.currentIndex.clamp(0, 7),
                   children: const [
                     AdminDashboardScreen(),
                     AdminBookingsScreen(),
@@ -121,6 +126,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     AdminCustomersScreen(),
                     AdminVendorRequestsScreen(),
                     AdminContactInboxScreen(),
+                    AdminCatalogManagementScreen(initialTabIndex: 0),
+                    AdminCatalogManagementScreen(initialTabIndex: 1),
                   ],
                 ),
               ),
@@ -191,25 +198,25 @@ class _AdminDashboardBody extends StatelessWidget {
               _StatCard(
                 label: 'Total Bookings',
                 value: dash.totalBookings.toString(),
-                icon: Icons.calendar_month_rounded,
+                icon: Icons.calendar_month_outlined,
                 color: AppColors.brandPink,
               ),
               _StatCard(
                 label: 'Pending',
                 value: dash.pendingBookings.toString(),
-                icon: Icons.hourglass_top_rounded,
+                icon: Icons.hourglass_top_outlined,
                 color: AppColors.discountOrange,
               ),
               _StatCard(
                 label: 'Vendors',
                 value: dash.totalVendors.toString(),
-                icon: Icons.storefront_rounded,
+                icon: Icons.storefront_outlined,
                 color: AppColors.primaryGold,
               ),
               _StatCard(
                 label: 'Customers',
                 value: dash.totalCustomers.toString(),
-                icon: Icons.people_rounded,
+                icon: Icons.people_outline_rounded,
                 color: AppColors.successGreen,
               ),
             ],
@@ -362,7 +369,7 @@ class _AdminDashboardBody extends StatelessWidget {
             return _ActivityTile(
               title: name.isNotEmpty ? name : 'Customer',
               subtitle: 'Status: $statusLabel',
-              icon: Icons.calendar_month_rounded,
+              icon: Icons.calendar_month_outlined,
             );
           }),
           if (dash.recentBookings.isEmpty)

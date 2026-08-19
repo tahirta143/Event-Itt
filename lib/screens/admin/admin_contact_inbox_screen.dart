@@ -66,7 +66,7 @@ class _AdminContactInboxScreenState extends State<AdminContactInboxScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const Icon(Icons.close_outlined),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -119,7 +119,7 @@ class _AdminContactInboxScreenState extends State<AdminContactInboxScreen> {
                         }
                       }
                     },
-                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                    icon: const Icon(Icons.delete_outline, size: 18),
                     label: const Text('Delete'),
                   ),
                 ),
@@ -194,7 +194,7 @@ class _AdminContactInboxScreenState extends State<AdminContactInboxScreen> {
             ),
             decoration: InputDecoration(
               hintText: 'Search by name, email, or subject...',
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              prefixIcon: const Icon(Icons.search_outlined, size: 20),
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -226,7 +226,7 @@ class _AdminContactInboxScreenState extends State<AdminContactInboxScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.mark_email_read_rounded,
+                  const Icon(Icons.mark_email_read_outlined,
                       size: 48, color: AppColors.textLight),
                   const SizedBox(height: 12),
                   Text(
@@ -273,8 +273,8 @@ class _AdminContactInboxScreenState extends State<AdminContactInboxScreen> {
                           radius: 18,
                           child: Icon(
                             item.isRead
-                                ? Icons.mark_email_read_rounded
-                                : Icons.mark_email_unread_rounded,
+                                ? Icons.mark_email_read_outlined
+                                : Icons.mark_email_unread_outlined,
                             color: item.isRead
                                 ? AppColors.textMedium
                                 : Colors.white,
@@ -357,7 +357,7 @@ class _AdminContactInboxScreenState extends State<AdminContactInboxScreen> {
                   onPressed: provider.currentPage > 1
                       ? () => provider.prevPage(adminAuth.token ?? '')
                       : null,
-                  icon: const Icon(Icons.chevron_left_rounded),
+                  icon: const Icon(Icons.chevron_left_outlined),
                   label: const Text('Previous'),
                 ),
                 Text(
@@ -372,7 +372,7 @@ class _AdminContactInboxScreenState extends State<AdminContactInboxScreen> {
                   onPressed: provider.currentPage < provider.totalPages
                       ? () => provider.nextPage(adminAuth.token ?? '')
                       : null,
-                  icon: const Icon(Icons.chevron_right_rounded),
+                  icon: const Icon(Icons.chevron_right_outlined),
                   label: const Text('Next'),
                 ),
               ],

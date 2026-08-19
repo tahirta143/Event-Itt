@@ -85,12 +85,12 @@ class _AdminSetupCategoryScreenState extends State<AdminSetupCategoryScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ListTile(
-                          leading: const Icon(Icons.photo_library_rounded, color: AppColors.brandPink),
+                          leading: const Icon(Icons.photo_library_outlined, color: AppColors.brandPink),
                           title: const Text('Photo Gallery'),
                           onTap: () => Navigator.pop(ctx, ImageSource.gallery),
                         ),
                         ListTile(
-                          leading: const Icon(Icons.camera_alt_rounded, color: AppColors.brandPink),
+                          leading: const Icon(Icons.camera_alt_outlined, color: AppColors.brandPink),
                           title: const Text('Camera'),
                           onTap: () => Navigator.pop(ctx, ImageSource.camera),
                         ),
@@ -160,7 +160,7 @@ class _AdminSetupCategoryScreenState extends State<AdminSetupCategoryScreen> {
                                   : Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        Icon(Icons.add_photo_alternate_rounded, color: AppColors.textLight),
+                                        Icon(Icons.add_photo_alternate_outlined, color: AppColors.textLight),
                                         const SizedBox(height: 4),
                                         Text('Category Image', style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textLight)),
                                       ],
@@ -308,258 +308,220 @@ class _AdminSetupCategoryScreenState extends State<AdminSetupCategoryScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminCategoryProvider>();
+    final canEdit = context.read<AdminAuthProvider>().hasPermission('services');
 
-    return Scaffold(
-      backgroundColor: AppColors.lightBackground,
-      appBar: AppBar(
-        backgroundColor: AppColors.darkHeader,
-        title: Text('Category Setup', style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, color: Colors.white)),
-        actions: [
-          if (_selectedIds.isNotEmpty) ...[
-            IconButton(
-              tooltip: 'Activate selected',
-              icon: const Icon(Icons.check_circle_outline, color: Colors.white),
-              onPressed: () async {
-                await provider.bulkSetActive(_token, _selectedIds, true);
-                setState(() => _selectedIds.clear());
-              },
+    return RefreshIndicator(
+      onRefresh: _loadData,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (val) => provider.setSearch(val),
+              decoration: InputDecoration(
+                hintText: 'Search categories...',
+                prefixIcon: const Icon(Icons.search_outlined),
+                filled: true,
+                fillColor: AppColors.cardWhite,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.borderGrey)),
+              ),
             ),
-            IconButton(
-              tooltip: 'Deactivate selected',
-              icon: const Icon(Icons.block, color: Colors.white),
-              onPressed: () async {
-                await provider.bulkSetActive(_token, _selectedIds, false);
-                setState(() => _selectedIds.clear());
-              },
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Showing ${provider.categories.length} of ${provider.totalCount} categories',
+                style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textMedium, fontWeight: FontWeight.w600),
+              ),
             ),
-            IconButton(
-              tooltip: 'Delete selected',
-              icon: const Icon(Icons.delete_outline, color: Colors.white),
-              onPressed: () async {
-                final ids = Set<String>.from(_selectedIds);
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Delete ${ids.length} categories?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-                      TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.redAccent))),
-                    ],
-                  ),
-                );
-                if (confirmed == true) {
-                  await provider.bulkDelete(_token, ids);
-                  setState(() => _selectedIds.clear());
-                }
-              },
-            ),
-          ],
-          IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: _loadData),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.brandPink,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text('Add Category', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w600)),
-        onPressed: () => _openCategoryDialog(),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadData,
-        child: Column(
-          children: [
+          ),
+          if (provider.error != null)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) => provider.setSearch(val),
-                decoration: InputDecoration(
-                  hintText: 'Search categories...',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: AppColors.cardWhite,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.borderGrey)),
-                ),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(provider.error!, style: const TextStyle(color: Colors.redAccent)),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Showing ${provider.categories.length} of ${provider.totalCount} categories',
-                  style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textMedium, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-            if (provider.error != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(provider.error!, style: const TextStyle(color: Colors.redAccent)),
-              ),
-            Expanded(
-              child: provider.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : provider.categories.isEmpty
-                      ? Center(
-                          child: Text(
-                            provider.searchQuery.isNotEmpty ? 'No categories match your search.' : 'No categories available. Create one to get started.',
-                            style: GoogleFonts.montserrat(color: AppColors.textMedium),
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
-                          itemCount: provider.categories.length,
-                          itemBuilder: (context, index) {
-                            final category = provider.categories[index];
-                            final isSelected = _selectedIds.contains(category.id);
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                              color: AppColors.cardWhite,
-                              child: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Checkbox(value: isSelected, onChanged: (_) => _toggleSelect(category.id)),
-                                    if (category.imageUrl != null && category.imageUrl!.isNotEmpty)
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Image.network(
-                                          category.imageUrl!,
-                                          width: 48,
-                                          height: 48,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Container(
+          Expanded(
+            child: provider.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : provider.categories.isEmpty
+                    ? Center(
+                        child: Text(
+                          provider.searchQuery.isNotEmpty ? 'No categories match your search.' : 'No categories available. Create one to get started.',
+                          style: GoogleFonts.montserrat(color: AppColors.textMedium),
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                    : Stack(
+                        children: [
+                          ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 100),
+                            itemCount: provider.categories.length,
+                            itemBuilder: (context, index) {
+                              final category = provider.categories[index];
+                              final isSelected = _selectedIds.contains(category.id);
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                color: AppColors.cardWhite,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Checkbox(value: isSelected, onChanged: (_) => _toggleSelect(category.id)),
+                                      if (category.imageUrl != null && category.imageUrl!.isNotEmpty)
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Image.network(
+                                            category.imageUrl!,
                                             width: 48,
                                             height: 48,
-                                            color: AppColors.lightGrey,
-                                            child: const Icon(Icons.image_not_supported_outlined, size: 18),
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Container(
+                                              width: 48,
+                                              height: 48,
+                                              color: AppColors.lightGrey,
+                                              child: const Icon(Icons.image_not_supported_outlined, size: 18),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  category.categoryName,
-                                                  style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Text(
+                                                    category.categoryName,
+                                                    style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textDark),
+                                                  ),
                                                 ),
-                                              ),
-                                              if (category.isFeatured)
-                                                const Padding(
-                                                  padding: EdgeInsets.only(left: 4),
-                                                  child: Icon(Icons.star_rounded, size: 18, color: Colors.amber),
-                                                ),
-                                            ],
-                                          ),
-                                          if ((category.description ?? '').isNotEmpty)
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 2),
-                                              child: Text(
-                                                category.description!,
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textMedium),
-                                              ),
+                                                if (category.isFeatured)
+                                                  const Padding(
+                                                    padding: EdgeInsets.only(left: 4),
+                                                    child: Icon(Icons.star_outline_rounded, size: 18, color: Colors.amber),
+                                                  ),
+                                              ],
                                             ),
-                                          if (category.eventTypes.isNotEmpty)
+                                            if ((category.description ?? '').isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 2),
+                                                child: Text(
+                                                  category.description!,
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: GoogleFonts.montserrat(fontSize: 12, color: AppColors.textMedium),
+                                                ),
+                                              ),
+                                            if (category.eventTypes.isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(top: 6),
+                                                child: Wrap(
+                                                  spacing: 6,
+                                                  runSpacing: 4,
+                                                  children: category.eventTypes
+                                                      .map((t) => Chip(
+                                                            label: Text(t, style: const TextStyle(fontSize: 10)),
+                                                            visualDensity: VisualDensity.compact,
+                                                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                            backgroundColor: AppColors.romanticPink.withOpacity(0.4),
+                                                          ))
+                                                      .toList(),
+                                                ),
+                                              ),
                                             Padding(
                                               padding: const EdgeInsets.only(top: 6),
-                                              child: Wrap(
-                                                spacing: 6,
-                                                runSpacing: 4,
-                                                children: category.eventTypes
-                                                    .map((t) => Chip(
-                                                          label: Text(t, style: const TextStyle(fontSize: 10)),
-                                                          visualDensity: VisualDensity.compact,
-                                                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                          backgroundColor: AppColors.romanticPink.withOpacity(0.4),
-                                                        ))
-                                                    .toList(),
-                                              ),
-                                            ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(top: 6),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                                  decoration: BoxDecoration(
-                                                    color: category.isActive ? AppColors.successGreen.withOpacity(0.1) : Colors.redAccent.withOpacity(0.1),
-                                                    borderRadius: BorderRadius.circular(20),
-                                                  ),
-                                                  child: Text(
-                                                    category.isActive ? 'Active' : 'Inactive',
-                                                    style: TextStyle(
-                                                      fontSize: 10,
-                                                      fontWeight: FontWeight.w700,
-                                                      color: category.isActive ? AppColors.successGreen : Colors.redAccent,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                GestureDetector(
-                                                  onTap: () => provider.toggleFeatured(_token, category),
-                                                  child: Container(
+                                              child: Row(
+                                                children: [
+                                                  Container(
                                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                                     decoration: BoxDecoration(
-                                                      color: category.isFeatured ? Colors.amber.withOpacity(0.15) : AppColors.lightGrey,
+                                                      color: category.isActive ? AppColors.successGreen.withOpacity(0.1) : Colors.redAccent.withOpacity(0.1),
                                                       borderRadius: BorderRadius.circular(20),
                                                     ),
                                                     child: Text(
-                                                      category.isFeatured ? 'Featured' : 'Feature',
+                                                      category.isActive ? 'Active' : 'Inactive',
                                                       style: TextStyle(
                                                         fontSize: 10,
                                                         fontWeight: FontWeight.w700,
-                                                        color: category.isFeatured ? Colors.amber[800] : AppColors.textMedium,
+                                                        color: category.isActive ? AppColors.successGreen : Colors.redAccent,
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                  const SizedBox(width: 8),
+                                                  GestureDetector(
+                                                    onTap: () => provider.toggleFeatured(_token, category),
+                                                    child: Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: category.isFeatured ? Colors.amber.withOpacity(0.15) : AppColors.lightGrey,
+                                                        borderRadius: BorderRadius.circular(20),
+                                                      ),
+                                                      child: Text(
+                                                        category.isFeatured ? 'Featured' : 'Feature',
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          fontWeight: FontWeight.w700,
+                                                          color: category.isFeatured ? Colors.amber[800] : AppColors.textMedium,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
+                                          ],
+                                        ),
+                                      ),
+                                      Column(
+                                        children: [
+                                          Switch(
+                                            value: category.isActive,
+                                            activeColor: AppColors.successGreen,
+                                            onChanged: (_) => provider.toggleActive(_token, category),
+                                          ),
+                                          PopupMenuButton<String>(
+                                            onSelected: (value) {
+                                              if (value == 'edit') {
+                                                _openCategoryDialog(existing: category);
+                                              } else if (value == 'delete') {
+                                                _confirmDelete(category);
+                                              }
+                                            },
+                                            itemBuilder: (context) => [
+                                              const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                                              const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.redAccent))),
+                                            ],
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    Column(
-                                      children: [
-                                        Switch(
-                                          value: category.isActive,
-                                          activeColor: AppColors.successGreen,
-                                          onChanged: (_) => provider.toggleActive(_token, category),
-                                        ),
-                                        PopupMenuButton<String>(
-                                          onSelected: (value) {
-                                            if (value == 'edit') {
-                                              _openCategoryDialog(existing: category);
-                                            } else if (value == 'delete') {
-                                              _confirmDelete(category);
-                                            }
-                                          },
-                                          itemBuilder: (context) => [
-                                            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                                            const PopupMenuItem(value: 'delete', child: Text('Delete', style: TextStyle(color: Colors.redAccent))),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
+                              );
+                            },
+                          ),
+                          if (canEdit)
+                            Positioned(
+                              bottom: 20,
+                              right: 20,
+                              child: FloatingActionButton.extended(
+                                heroTag: null,
+                                backgroundColor: AppColors.brandPink,
+                                icon: const Icon(Icons.add_outlined, color: Colors.white),
+                                label: Text('Add Category', style: GoogleFonts.montserrat(color: Colors.white, fontWeight: FontWeight.w600)),
+                                onPressed: () => _openCategoryDialog(),
                               ),
-                            );
-                          },
-                        ),
-            ),
-          ],
-        ),
+                            ),
+                        ],
+                      ),
+          ),
+        ],
       ),
     );
   }

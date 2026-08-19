@@ -32,7 +32,7 @@ class SearchBarWidget extends StatelessWidget {
       child: Row(
         children: [
           const Icon(
-            Icons.search_rounded,
+            Icons.search_outlined,
             color: AppColors.textMedium,
             size: 22,
           ),
@@ -59,7 +59,7 @@ class SearchBarWidget extends StatelessWidget {
           IconButton(
             onPressed: onFilterTap,
             icon: const Icon(
-              Icons.tune_rounded,
+              Icons.tune_outlined,
               color: AppColors.textDark,
               size: 20,
             ),

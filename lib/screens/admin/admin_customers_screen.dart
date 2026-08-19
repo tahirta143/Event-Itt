@@ -147,7 +147,7 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 ),
                 onPressed: () => _showAddCustomerDialog(context),
-                icon: const Icon(Icons.add_rounded, size: 16),
+                icon: const Icon(Icons.add_outlined, size: 16),
                 label: Text(
                   'Add',
                   style: GoogleFonts.montserrat(
@@ -168,7 +168,7 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
             ),
             decoration: InputDecoration(
               hintText: 'Search by customer name, email, or phone...',
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              prefixIcon: const Icon(Icons.search_outlined, size: 20),
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -200,7 +200,7 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.people_outline_rounded,
+                  const Icon(Icons.people_outline,
                       size: 48, color: AppColors.textLight),
                   const SizedBox(height: 12),
                   Text(
@@ -296,7 +296,7 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
                   onPressed: provider.currentPage > 1
                       ? () => provider.prevPage(adminAuth.token ?? '')
                       : null,
-                  icon: const Icon(Icons.chevron_left_rounded),
+                  icon: const Icon(Icons.chevron_left_outlined),
                   label: const Text('Previous'),
                 ),
                 Text(
@@ -311,7 +311,7 @@ class _AdminCustomersScreenState extends State<AdminCustomersScreen> {
                   onPressed: provider.currentPage < provider.totalPages
                       ? () => provider.nextPage(adminAuth.token ?? '')
                       : null,
-                  icon: const Icon(Icons.chevron_right_rounded),
+                  icon: const Icon(Icons.chevron_right_outlined),
                   label: const Text('Next'),
                 ),
               ],

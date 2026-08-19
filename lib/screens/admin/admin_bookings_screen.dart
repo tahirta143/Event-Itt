@@ -80,7 +80,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded),
+                  icon: const Icon(Icons.close_outlined),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -207,7 +207,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
             ),
             decoration: InputDecoration(
               hintText: 'Search by ID, customer, or service...',
-              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              prefixIcon: const Icon(Icons.search_outlined, size: 20),
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -378,7 +378,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
                   onPressed: provider.currentPage > 1
                       ? () => provider.prevPage(adminAuth.token ?? '')
                       : null,
-                  icon: const Icon(Icons.chevron_left_rounded),
+                  icon: const Icon(Icons.chevron_left_outlined),
                   label: const Text('Previous'),
                 ),
                 Text(
@@ -393,7 +393,7 @@ class _AdminBookingsScreenState extends State<AdminBookingsScreen> {
                   onPressed: provider.currentPage < provider.totalPages
                       ? () => provider.nextPage(adminAuth.token ?? '')
                       : null,
-                  icon: const Icon(Icons.chevron_right_rounded),
+                  icon: const Icon(Icons.chevron_right_outlined),
                   label: const Text('Next'),
                 ),
               ],

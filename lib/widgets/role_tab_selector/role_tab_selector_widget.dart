@@ -11,9 +11,9 @@ class RoleTabSelectorWidget extends StatelessWidget {
   final ValueChanged<int> onTabSelected;
 
   static const List<_TabConfig> _tabs = [
-    _TabConfig(label: 'Admin', icon: Icons.admin_panel_settings_rounded),
-    _TabConfig(label: 'Vendor', icon: Icons.storefront_rounded),
-    _TabConfig(label: 'Customer', icon: Icons.person_rounded),
+    _TabConfig(label: 'Admin', icon: Icons.admin_panel_settings_outlined),
+    _TabConfig(label: 'Vendor', icon: Icons.storefront_outlined),
+    _TabConfig(label: 'Customer', icon: Icons.person_outline_outlined),
   ];
 
   const RoleTabSelectorWidget({

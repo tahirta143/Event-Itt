@@ -78,7 +78,7 @@ class _VendorBookingsScreenState extends State<VendorBookingsScreen> {
                   color: AppColors.brandPink.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.calendar_month_rounded,
+                child: const Icon(Icons.calendar_month_outlined,
                     color: AppColors.brandPink, size: 20),
               ),
               const SizedBox(width: 14),

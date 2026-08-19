@@ -98,7 +98,7 @@ class CategoriesScreenBody extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Container(
                               color: AppColors.brandPink.withOpacity(0.1),
-                              child: const Icon(Icons.category_rounded, color: AppColors.brandPink, size: 32),
+                              child: const Icon(Icons.category_outlined, color: AppColors.brandPink, size: 32),
                             ),
                           ),
                         ),
@@ -155,7 +155,7 @@ class CategoriesScreenBody extends StatelessWidget {
                           width: 60,
                           height: 60,
                           color: AppColors.brandPink.withOpacity(0.1),
-                          child: const Icon(Icons.category_rounded, color: AppColors.brandPink, size: 24),
+                          child: const Icon(Icons.category_outlined, color: AppColors.brandPink, size: 24),
                         ),
                       ),
                     ),
@@ -170,7 +170,7 @@ class CategoriesScreenBody extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.textMedium),
+                    const Icon(Icons.arrow_forward_ios_outlined, size: 16, color: AppColors.textMedium),
                   ],
                 ),
               );
