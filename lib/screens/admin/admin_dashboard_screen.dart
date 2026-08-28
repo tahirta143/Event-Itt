@@ -406,9 +406,72 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         _buildMetricRow('Subcategories', sub['total'] ?? 0, sub['active'] ?? 0,
             sub['inactive'] ?? 0),
         const SizedBox(height: 8),
+        _buildPipelineMetricRow(dash),
+        const SizedBox(height: 8),
         _buildMetricRow('Bookings', bks['total'] ?? 0, bks['confirmed'] ?? 0,
             bks['pending'] ?? 0),
       ],
+    );
+  }
+
+  Widget _buildPipelineMetricRow(AdminDashboardProvider dash) {
+    final gross = dash.pipelineGross;
+    final paid = dash.pipelinePaid;
+    final outstanding = dash.pipelineOutstanding;
+    final pct = gross > 0 ? ((paid / gross) * 100).round().clamp(0, 100) : 0;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.lightGrey),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Pipeline Value',
+                  style: GoogleFonts.montserrat(
+                      fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(_formatCurrency(outstanding),
+                  style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryGold)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: gross > 0 ? (paid / gross).clamp(0.0, 1.0) : 0,
+              minHeight: 6,
+              backgroundColor: AppColors.lightGrey,
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(AppColors.successGreen),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Paid: ${_formatCurrency(paid)} ($pct%)',
+                  style: GoogleFonts.inter(
+                      fontSize: 10,
+                      color: AppColors.successGreen,
+                      fontWeight: FontWeight.bold)),
+              Text('Gross: ${_formatCurrency(gross)}',
+                  style: GoogleFonts.inter(
+                      fontSize: 10,
+                      color: AppColors.textMedium,
+                      fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

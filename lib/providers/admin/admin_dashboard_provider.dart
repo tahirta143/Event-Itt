@@ -39,8 +39,31 @@ class AdminDashboardProvider extends ChangeNotifier {
       (_summaryData?['bookings'] as Map<String, dynamic>?) ??
       {'total': 0, 'pending': 0, 'confirmed': 0, 'cancelled': 0};
 
-  double get pipelineValue =>
-      _parseDouble(_summaryData?['pipelineValue'] ?? _summaryData?['pipeline_value']);
+  Map<String, dynamic> get pipelineValueMap {
+    final raw = _summaryData?['pipelineValue'] ?? _summaryData?['pipeline_value'];
+    if (raw is Map<String, dynamic>) {
+      return raw;
+    } else if (raw is Map) {
+      return Map<String, dynamic>.from(raw);
+    }
+    final numVal = _parseDouble(raw);
+    return {
+      'gross': numVal,
+      'paid': 0.0,
+      'outstanding': numVal,
+    };
+  }
+
+  double get pipelineGross =>
+      _parseDouble(pipelineValueMap['gross']);
+
+  double get pipelinePaid =>
+      _parseDouble(pipelineValueMap['paid']);
+
+  double get pipelineOutstanding =>
+      _parseDouble(pipelineValueMap['outstanding'] ?? pipelineValueMap['gross']);
+
+  double get pipelineValue => pipelineOutstanding;
 
   int get customersWithBookings =>
       _parseInt(_summaryData?['customersWithBookings'] ?? _summaryData?['active_clients']);
