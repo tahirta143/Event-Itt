@@ -25,6 +25,10 @@ import 'providers/admin/admin_subcategory_provider.dart';
 
 // Vendor providers
 import 'providers/vendor/vendor_portal_provider.dart';
+import 'providers/vendor/vendor_services_provider.dart';
+import 'providers/vendor/vendor_availability_provider.dart';
+import 'providers/vendor/vendor_requests_provider.dart';
+import 'providers/vendor/vendor_profile_provider.dart';
 
 // Customer providers
 import 'providers/customer/customer_bookings_provider.dart';
@@ -47,6 +51,10 @@ import 'screens/admin/setup/admin_setup_subcategory_screen.dart';
 import 'screens/vendor/vendor_home_screen.dart';
 import 'screens/vendor/vendor_bookings_screen.dart';
 import 'screens/vendor/vendor_services_screen.dart';
+import 'screens/vendor/vendor_availability_screen.dart';
+import 'screens/vendor/vendor_analytics_screen.dart';
+import 'screens/vendor/vendor_requests_screen.dart';
+import 'screens/vendor/vendor_profile_screen.dart';
 import 'screens/customer/customer_home_screen.dart';
 import 'screens/customer/customer_bookings_screen.dart';
 
@@ -105,6 +113,10 @@ class VenueVibeApp extends StatelessWidget {
 
         // ── Vendor API providers ──
         ChangeNotifierProvider(create: (_) => VendorPortalProvider()),
+        ChangeNotifierProvider(create: (_) => VendorServicesProvider()),
+        ChangeNotifierProvider(create: (_) => VendorAvailabilityProvider()),
+        ChangeNotifierProvider(create: (_) => VendorRequestsProvider()),
+        ChangeNotifierProvider(create: (_) => VendorProfileProvider()),
 
         // ── Customer API providers ──
         ChangeNotifierProvider(create: (_) => CustomerBookingsProvider()),
@@ -140,6 +152,10 @@ class VenueVibeApp extends StatelessWidget {
           '/vendor/home': (context) => const VendorHomeScreen(),
           '/vendor/bookings': (context) => const VendorBookingsScreen(),
           '/vendor/services': (context) => const VendorServicesScreen(),
+          '/vendor/availability': (context) => const VendorAvailabilityScreen(),
+          '/vendor/analytics': (context) => const VendorAnalyticsScreen(),
+          '/vendor/requests': (context) => const VendorRequestsScreen(),
+          '/vendor/profile': (context) => const VendorProfileScreen(),
 
           // ── Customer routes ──
           '/customer/home': (context) => const CustomerHomeScreen(),

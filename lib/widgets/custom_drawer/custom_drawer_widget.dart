@@ -215,28 +215,65 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                   ] else if (role == UserRole.vendor) ...[
+                    _buildSectionHeader('OVERVIEW'),
                     _buildDrawerItem(
-                      icon: Icons.dashboard_outlined,
-                      title: 'Vendor Portal Dashboard',
+                      icon: Icons.grid_view_rounded,
+                      title: 'Dashboard',
                       onTap: () {
                         Navigator.pop(context);
                         onNavigationSelected('/vendor/home');
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.calendar_month_outlined,
-                      title: 'Booking Requests',
+                      icon: Icons.trending_up_rounded,
+                      title: 'Analytics',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onNavigationSelected('/vendor/analytics');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSectionHeader('BUSINESS'),
+                    _buildDrawerItem(
+                      icon: Icons.layers_outlined,
+                      title: 'My Services',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onNavigationSelected('/vendor/services');
+                      },
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.calendar_today_outlined,
+                      title: 'Availability',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onNavigationSelected('/vendor/availability');
+                      },
+                    ),
+                    _buildDrawerItem(
+                      icon: Icons.person_outline_rounded,
+                      title: 'Profile',
+                      onTap: () {
+                        Navigator.pop(context);
+                        onNavigationSelected('/vendor/profile');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSectionHeader('BOOKINGS'),
+                    _buildDrawerItem(
+                      icon: Icons.menu_book_outlined,
+                      title: 'Bookings',
                       onTap: () {
                         Navigator.pop(context);
                         onNavigationSelected('/vendor/bookings');
                       },
                     ),
                     _buildDrawerItem(
-                      icon: Icons.room_service_outlined,
-                      title: 'My Listed Services',
+                      icon: Icons.near_me_outlined,
+                      title: 'Service Requests',
                       onTap: () {
                         Navigator.pop(context);
-                        onNavigationSelected('/vendor/services');
+                        onNavigationSelected('/vendor/requests');
                       },
                     ),
                   ] else ...[
@@ -273,14 +310,16 @@ class CustomDrawerWidget extends StatelessWidget {
                       },
                     ),
                   ],
-                  const Divider(color: AppColors.lightGrey, height: 32, thickness: 1),
-                  _buildDrawerItem(
-                    icon: Icons.settings_outlined,
-                    title: 'Settings',
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                  ),
+                  if (role != UserRole.vendor) ...[
+                    const Divider(color: AppColors.lightGrey, height: 32, thickness: 1),
+                    _buildDrawerItem(
+                      icon: Icons.settings_outlined,
+                      title: 'Settings',
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -307,6 +346,21 @@ class CustomDrawerWidget extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 8, bottom: 6),
+      child: Text(
+        title,
+        style: GoogleFonts.montserrat(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textMedium,
+          letterSpacing: 1.2,
         ),
       ),
     );
