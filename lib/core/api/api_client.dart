@@ -94,10 +94,12 @@ class ApiClient {
     return 'Network error: $e';
   }
 
+  static const Duration _timeoutDuration = Duration(seconds: 25);
+
   Future<ApiResponse<dynamic>> get(String path) async {
     debugPrint('🌐 [API GET] $kBaseUrl$path');
     try {
-      final res = await http.get(_uri(path), headers: _headers).timeout(const Duration(seconds: 10));
+      final res = await http.get(_uri(path), headers: _headers).timeout(_timeoutDuration);
       debugPrint('✅ [API GET RESPONSE] Status: ${res.statusCode} for $path');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
@@ -115,7 +117,7 @@ class ApiClient {
         _uri(path),
         headers: _headers,
         body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(_timeoutDuration);
       debugPrint('✅ [API POST RESPONSE] Status: ${res.statusCode} for $path | Body: ${res.body}');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
@@ -133,7 +135,7 @@ class ApiClient {
         _uri(path),
         headers: _headers,
         body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(_timeoutDuration);
       debugPrint('✅ [API PUT RESPONSE] Status: ${res.statusCode} for $path | Body: ${res.body}');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
@@ -151,7 +153,7 @@ class ApiClient {
         _uri(path),
         headers: _headers,
         body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(_timeoutDuration);
       debugPrint('✅ [API PATCH RESPONSE] Status: ${res.statusCode} for $path | Body: ${res.body}');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);
@@ -165,7 +167,7 @@ class ApiClient {
   Future<ApiResponse<dynamic>> delete(String path) async {
     debugPrint('🌐 [API DELETE] $kBaseUrl$path');
     try {
-      final res = await http.delete(_uri(path), headers: _headers).timeout(const Duration(seconds: 10));
+      final res = await http.delete(_uri(path), headers: _headers).timeout(_timeoutDuration);
       debugPrint('✅ [API DELETE RESPONSE] Status: ${res.statusCode} for $path');
       if (res.statusCode >= 200 && res.statusCode < 300) {
         return ApiResponse.ok(_parse(res), res.statusCode);

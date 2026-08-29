@@ -3,19 +3,26 @@ import '../../core/api/api_client.dart';
 import '../../models/venue/venue_model.dart';
 import '../../models/category/category_model.dart';
 import '../../models/subcategory/subcategory_model.dart';
-import '../../utils/mock_data/mock_data.dart';
 
 class VenueProvider extends ChangeNotifier {
-  List<VenueModel> _venues = [];
-  List<CategoryModel> _categories = [];
+  List<VenueModel> _allVenues = [];
+  List<CategoryModel> _allCategories = [];
   List<SubCategoryModel> _subCategories = [];
 
   bool _isLoading = false;
   bool _isLoadingMoreVenues = false;
+  bool _isLoadingMoreCategories = false;
   String? _error;
 
+  // Venue Pagination (2-3 items on scroll)
+  int _currentDisplayCount = 3;
+  final int _pageSize = 3;
   int _currentVenuePage = 1;
   int _totalVenuePages = 1;
+
+  // Horizontal Category Pagination (show 5-6 initially, load more on horizontal scroll)
+  int _currentCategoryDisplayCount = 6;
+  final int _categoryPageSize = 4;
 
   String _searchQuery = '';
   String _selectedCategoryTitle = 'All';
@@ -23,10 +30,11 @@ class VenueProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   bool get isLoadingMoreVenues => _isLoadingMoreVenues;
+  bool get isLoadingMoreCategories => _isLoadingMoreCategories;
   String? get error => _error;
 
-  List<VenueModel> get venues {
-    return _venues.where((venue) {
+  List<VenueModel> get _filteredVenues {
+    return _allVenues.where((venue) {
       final matchesSearch = venue.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           venue.location.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           venue.category.toLowerCase().contains(_searchQuery.toLowerCase()) ||
@@ -39,7 +47,33 @@ class VenueProvider extends ChangeNotifier {
     }).toList();
   }
 
-  List<CategoryModel> get categories => _categories;
+  /// Paginated venues list returned to the UI (displays 3 initially, loads 3 on scroll)
+  List<VenueModel> get venues {
+    final filtered = _filteredVenues;
+    if (_currentDisplayCount >= filtered.length) {
+      return filtered;
+    }
+    return filtered.take(_currentDisplayCount).toList();
+  }
+
+  /// Paginated categories list returned for horizontal list view
+  List<CategoryModel> get categories {
+    if (_currentCategoryDisplayCount >= _allCategories.length) {
+      return _allCategories;
+    }
+    return _allCategories.take(_currentCategoryDisplayCount).toList();
+  }
+
+  bool get hasMoreVenues {
+    final filtered = _filteredVenues;
+    if (_currentDisplayCount < filtered.length) return true;
+    return _currentVenuePage < _totalVenuePages;
+  }
+
+  bool get hasMoreCategories {
+    return _currentCategoryDisplayCount < _allCategories.length;
+  }
+
   List<SubCategoryModel> get subCategories => _subCategories;
   String get searchQuery => _searchQuery;
   String get selectedCategoryTitle => _selectedCategoryTitle;
@@ -47,22 +81,24 @@ class VenueProvider extends ChangeNotifier {
   int get currentVenuePage => _currentVenuePage;
   int get totalVenuePages => _totalVenuePages;
 
-  /// Main entry point to fetch initial public data
+  /// Main entry point to fetch initial public data (starts displaying as soon as either arrives)
   Future<void> fetchPublicData() async {
     _isLoading = true;
     _error = null;
+    _currentDisplayCount = _pageSize;
+    _currentCategoryDisplayCount = 6;
     notifyListeners();
 
-    // Start both concurrently
-    final catTask = fetchCategories();
-    final venTask = fetchVenues(page: 1);
+    // Fire concurrently and let each notify as soon as ready
+    Future.microtask(() async {
+      await fetchCategories();
+      if (_allVenues.isNotEmpty) {
+        _isLoading = false;
+        notifyListeners();
+      }
+    });
 
-    // We don't use Future.wait here because we want 
-    // fetchCategories and fetchVenues to notify listeners 
-    // independently as they finish.
-    await catTask;
-    await venTask;
-
+    await fetchVenues(page: 1);
     _isLoading = false;
     notifyListeners();
   }
@@ -75,7 +111,11 @@ class VenueProvider extends ChangeNotifier {
       if (catRes.success && catRes.data != null) {
         final List<dynamic> catList = catRes.data is List ? catRes.data : [];
         final List<CategoryModel> parsedCategories = [
-          CategoryModel(id: 'all', title: 'All', imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80')
+          CategoryModel(
+            id: 'all',
+            title: 'All',
+            imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=300&q=70',
+          )
         ];
         final List<SubCategoryModel> parsedSubCategories = [];
 
@@ -89,7 +129,7 @@ class VenueProvider extends ChangeNotifier {
             parsedCategories.add(CategoryModel(
               id: catId,
               title: catName,
-              imageUrl: catImg.isNotEmpty ? _resolveUrl(catImg) : 'https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80',
+              imageUrl: catImg.isNotEmpty ? _resolveUrl(catImg) : 'https://images.unsplash.com/photo-1519741497674-611481863552?w=300&q=70',
               itemQuantity: subs.length,
             ));
 
@@ -100,14 +140,14 @@ class VenueProvider extends ChangeNotifier {
                   id: s['id']?.toString() ?? '',
                   categoryId: catId,
                   title: s['subcategory_name']?.toString() ?? 'Subcategory',
-                  imageUrl: subImg.isNotEmpty ? _resolveUrl(subImg) : 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80',
+                  imageUrl: subImg.isNotEmpty ? _resolveUrl(subImg) : 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300&q=70',
                   count: 1,
                 ));
               }
             }
           }
         }
-        _categories = parsedCategories;
+        _allCategories = parsedCategories;
         _subCategories = parsedSubCategories;
         notifyListeners();
       }
@@ -119,12 +159,11 @@ class VenueProvider extends ChangeNotifier {
   /// Fetches real vendors/venues with pagination support.
   Future<void> fetchVenues({int page = 1, bool loadMore = false}) async {
     if (loadMore) {
-      if (_isLoadingMoreVenues || _currentVenuePage >= _totalVenuePages) return;
+      if (_isLoadingMoreVenues) return;
       _isLoadingMoreVenues = true;
     } else {
       _currentVenuePage = page;
-      // Don't clear venues immediately if we are just refreshing, 
-      // but let fetchPublicData handle the main loader.
+      _currentDisplayCount = _pageSize;
     }
     notifyListeners();
 
@@ -149,7 +188,7 @@ class VenueProvider extends ChangeNotifier {
             final logo = v['logo_url']?.toString() ?? '';
             final imgUrl = logo.isNotEmpty
                 ? _resolveUrl(logo)
-                : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&q=80';
+                : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=500&q=70';
 
             final categoryNames = v['category_names']?.toString() ?? 'Venue';
             final subcategoryNames = v['subcategory_names']?.toString() ?? '';
@@ -172,10 +211,11 @@ class VenueProvider extends ChangeNotifier {
         }
 
         if (loadMore) {
-          _venues.addAll(parsedVenues);
+          _allVenues.addAll(parsedVenues);
           _currentVenuePage++;
+          _currentDisplayCount += _pageSize;
         } else {
-          _venues = parsedVenues;
+          _allVenues = parsedVenues;
         }
       }
     } catch (e) {
@@ -183,6 +223,36 @@ class VenueProvider extends ChangeNotifier {
       if (!loadMore) _error = 'Failed to load venues: $e';
     } finally {
       _isLoadingMoreVenues = false;
+      notifyListeners();
+    }
+  }
+
+  /// Triggers on scroll to load next batch of 2-3 venue cards
+  Future<void> loadMoreVenuesOnScroll() async {
+    if (_isLoadingMoreVenues) return;
+
+    final filtered = _filteredVenues;
+    if (_currentDisplayCount < filtered.length) {
+      _isLoadingMoreVenues = true;
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 300));
+      _currentDisplayCount += _pageSize;
+      _isLoadingMoreVenues = false;
+      notifyListeners();
+    } else if (_currentVenuePage < _totalVenuePages) {
+      await fetchVenues(page: _currentVenuePage + 1, loadMore: true);
+    }
+  }
+
+  /// Triggers on horizontal scroll to load next batch of 4 categories
+  Future<void> loadMoreCategoriesOnScroll() async {
+    if (_isLoadingMoreCategories) return;
+    if (_currentCategoryDisplayCount < _allCategories.length) {
+      _isLoadingMoreCategories = true;
+      notifyListeners();
+      await Future.delayed(const Duration(milliseconds: 250));
+      _currentCategoryDisplayCount += _categoryPageSize;
+      _isLoadingMoreCategories = false;
       notifyListeners();
     }
   }
@@ -196,32 +266,36 @@ class VenueProvider extends ChangeNotifier {
 
   void setSearchQuery(String query) {
     _searchQuery = query;
+    _currentDisplayCount = _pageSize;
     notifyListeners();
   }
 
-  void selectCategory(String title) {
-    if (_selectedCategoryTitle == title) {
+  void selectCategory(String categoryTitle) {
+    if (_selectedCategoryTitle == categoryTitle) {
       _selectedCategoryTitle = 'All';
     } else {
-      _selectedCategoryTitle = title;
+      _selectedCategoryTitle = categoryTitle;
     }
+    _selectedSubCategoryTitle = 'All';
+    _currentDisplayCount = _pageSize;
     notifyListeners();
   }
 
-  void selectSubCategory(String title) {
-    if (_selectedSubCategoryTitle == title) {
+  void selectSubCategory(String subCategoryTitle) {
+    if (_selectedSubCategoryTitle == subCategoryTitle) {
       _selectedSubCategoryTitle = 'All';
     } else {
-      _selectedSubCategoryTitle = title;
+      _selectedSubCategoryTitle = subCategoryTitle;
     }
+    _currentDisplayCount = _pageSize;
     notifyListeners();
   }
 
   void toggleFavorite(String venueId) {
-    final index = _venues.indexWhere((v) => v.id == venueId);
+    final index = _allVenues.indexWhere((v) => v.id == venueId);
     if (index != -1) {
-      _venues[index] = _venues[index].copyWith(
-        isFavorite: !_venues[index].isFavorite,
+      _allVenues[index] = _allVenues[index].copyWith(
+        isFavorite: !_allVenues[index].isFavorite,
       );
       notifyListeners();
     }
