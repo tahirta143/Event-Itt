@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/dashboard/dashboard_provider.dart';
 import '../../utils/colors/app_colors.dart';
+import '../customer/customer_booking_flow_sheet.dart';
 
 class ServicesScreen extends StatelessWidget {
   const ServicesScreen({super.key});
@@ -43,20 +44,28 @@ class ServicesScreenBody extends StatelessWidget {
         }
 
         final service = dashboardProvider.services[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.cardWhite,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+        return InkWell(
+          onTap: () {
+            CustomerBookingFlowSheet.show(
+              context,
+              subcategoryName: service.title,
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.cardWhite,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
           child: Row(
             children: [
               ClipRRect(
@@ -113,8 +122,9 @@ class ServicesScreenBody extends StatelessWidget {
               ),
             ],
           ),
-        );
-      },
+        ),
+      );
+    },
     );
   }
 }

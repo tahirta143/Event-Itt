@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../models/venue/venue_model.dart';
 import '../../utils/colors/app_colors.dart';
+import '../customer/customer_booking_flow_sheet.dart';
 
 class VenueDetailScreen extends StatefulWidget {
   final VenueModel venue;
@@ -248,8 +249,9 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Booking request sent for ${widget.venue.title}!')),
+                      CustomerBookingFlowSheet.show(
+                        context,
+                        categoryName: widget.venue.category,
                       );
                     },
                     style: ElevatedButton.styleFrom(
