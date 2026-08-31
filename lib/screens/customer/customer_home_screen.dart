@@ -19,7 +19,10 @@ import '../venue_detail/venue_detail_screen.dart';
 import '../categories/categories_screen.dart';
 import '../services/services_screen.dart';
 import '../login/login_screen.dart';
+import '../../models/subcategory/subcategory_model.dart';
+import '../subcategory_detail/subcategory_detail_screen.dart';
 import 'customer_bookings_screen.dart';
+import 'customer_booking_flow_sheet.dart';
 
 class CustomerHomeScreen extends StatefulWidget {
   const CustomerHomeScreen({super.key});
@@ -280,35 +283,161 @@ class _CustomerMainContentState extends State<_CustomerMainContent> {
             child: PromoBannerWidget(onTap: () {}),
           ),
 
-          // Venues
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 4, bottom: 14),
-              child: Text(
-                'Venues',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-              ),
-            ),
-          ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final venue = venueProvider.venues[index];
-                return VenueCardWidget(
-                  venue: venue,
-                  onTap: () => Navigator.of(context).push(
-                    AppAnimations.slideUpRoute(VenueDetailScreen(venue: venue)),
+          // Main Offerings & Venues Header
+          Builder(
+            builder: (context) {
+              final isAll = venueProvider.selectedCategoryTitle == 'All';
+              final matchingSubs = isAll
+                  ? <SubCategoryModel>[]
+                  : venueProvider.subCategories.where((s) {
+                      if (s.categoryName != null) {
+                        return s.categoryName!.toLowerCase() ==
+                            venueProvider.selectedCategoryTitle.toLowerCase();
+                      }
+                      final matchedCat = venueProvider.categories.where((c) =>
+                          c.title.toLowerCase() ==
+                          venueProvider.selectedCategoryTitle.toLowerCase());
+                      if (matchedCat.isNotEmpty) {
+                        return s.categoryId == matchedCat.first.id;
+                      }
+                      return false;
+                    }).toList();
+
+              final matchingVenues = isAll
+                  ? venueProvider.venues
+                  : venueProvider.venues.where((v) =>
+                      v.category.toLowerCase() ==
+                      venueProvider.selectedCategoryTitle.toLowerCase()).toList();
+
+              final totalItems = matchingSubs.length + matchingVenues.length;
+
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isAll ? 'Venues & Offerings' : '${venueProvider.selectedCategoryTitle} Offerings',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      if (!isAll && totalItems > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryGold.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '$totalItems Available',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryGold,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  onFavoriteToggle: () => venueProvider.toggleFavorite(venue.id),
-                  onShareTap: () {},
+                ),
+              );
+            },
+          ),
+
+          // Main Unified Feed: Large Subcategory Cards & Venue Cards
+          Builder(
+            builder: (context) {
+              final isAll = venueProvider.selectedCategoryTitle == 'All';
+              final matchingSubs = isAll
+                  ? <SubCategoryModel>[]
+                  : venueProvider.subCategories.where((s) {
+                      if (s.categoryName != null) {
+                        return s.categoryName!.toLowerCase() ==
+                            venueProvider.selectedCategoryTitle.toLowerCase();
+                      }
+                      final matchedCat = venueProvider.categories.where((c) =>
+                          c.title.toLowerCase() ==
+                          venueProvider.selectedCategoryTitle.toLowerCase());
+                      if (matchedCat.isNotEmpty) {
+                        return s.categoryId == matchedCat.first.id;
+                      }
+                      return false;
+                    }).toList();
+
+              final matchingVenues = isAll
+                  ? venueProvider.venues
+                  : venueProvider.venues.where((v) =>
+                      v.category.toLowerCase() ==
+                      venueProvider.selectedCategoryTitle.toLowerCase()).toList();
+
+              if (!isAll && matchingSubs.isEmpty && matchingVenues.isEmpty) {
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(36.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: AppColors.brandPink.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.room_service_outlined,
+                              size: 40, color: AppColors.brandPink),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          'No Offerings for ${venueProvider.selectedCategoryTitle}',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Select another category or view all options.',
+                          style: GoogleFonts.inter(
+                              fontSize: 12, color: AppColors.textMedium),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
-              },
-              childCount: venueProvider.venues.length,
-            ),
+              }
+
+              return SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (index < matchingSubs.length) {
+                      final sub = matchingSubs[index];
+                      return _buildLargeSubCategoryCard(
+                        context,
+                        sub,
+                        venueProvider.selectedCategoryTitle,
+                      );
+                    }
+
+                    final venueIndex = index - matchingSubs.length;
+                    final venue = matchingVenues[venueIndex];
+                    return VenueCardWidget(
+                      venue: venue,
+                      onTap: () => Navigator.of(context).push(
+                        AppAnimations.slideUpRoute(VenueDetailScreen(venue: venue)),
+                      ),
+                      onFavoriteToggle: () => venueProvider.toggleFavorite(venue.id),
+                      onShareTap: () {},
+                    );
+                  },
+                  childCount: matchingSubs.length + matchingVenues.length,
+                ),
+              );
+            },
           ),
 
           if (venueProvider.isLoadingMoreVenues)
@@ -329,6 +458,173 @@ class _CustomerMainContentState extends State<_CustomerMainContent> {
       ),
     );
   }
+
+  Widget _buildLargeSubCategoryCard(
+      BuildContext context, SubCategoryModel sub, String categoryName) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.lightGrey),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(24),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SubcategoryDetailScreen(
+                  subCategory: sub,
+                  categoryName: categoryName,
+                ),
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+          // Large Image
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            child: SizedBox(
+              height: 190,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.network(
+                    sub.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: AppColors.brandPink.withOpacity(0.1),
+                      child: const Icon(Icons.celebration_rounded,
+                          color: AppColors.brandPink, size: 48),
+                    ),
+                  ),
+                  Positioned(
+                    top: 14,
+                    left: 14,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.65),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        categoryName,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  sub.title,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                if (sub.description != null && sub.description!.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    sub.description!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: AppColors.textMedium,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                const Divider(height: 1, color: AppColors.lightGrey),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Starting From',
+                          style: GoogleFonts.inter(
+                              fontSize: 10, color: AppColors.textLight),
+                        ),
+                        Text(
+                          sub.basePrice != null && sub.basePrice! > 0
+                              ? 'PKR ${sub.basePrice!.toStringAsFixed(0)}'
+                              : 'Price on quotation',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryGold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brandPink,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
+                        elevation: 2,
+                      ),
+                      onPressed: () {
+                        CustomerBookingFlowSheet.show(
+                          context,
+                          subcategoryId: sub.id,
+                          subcategoryName: sub.title,
+                          categoryName: categoryName,
+                        );
+                      },
+                      icon: const Icon(Icons.calendar_month_rounded, size: 16),
+                      label: Text(
+                        'Book This',
+                        style: GoogleFonts.montserrat(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+);
+}
 
   void _showFilterSheet(BuildContext context) {
     showModalBottomSheet(

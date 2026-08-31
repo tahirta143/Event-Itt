@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../models/venue/venue_model.dart';
+import '../../providers/venue/venue_provider.dart';
 import '../../utils/colors/app_colors.dart';
 import '../customer/customer_booking_flow_sheet.dart';
 
@@ -249,8 +251,26 @@ class _VenueDetailScreenState extends State<VenueDetailScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
+                      final venueProvider = context.read<VenueProvider>();
+                      String? matchedSubcatId;
+                      try {
+                        final matched = venueProvider.subCategories.firstWhere(
+                          (s) =>
+                              s.title.toLowerCase() ==
+                                  widget.venue.subCategory.toLowerCase() ||
+                              s.categoryName?.toLowerCase() ==
+                                  widget.venue.category.toLowerCase(),
+                        );
+                        matchedSubcatId = matched.id;
+                      } catch (_) {}
+
                       CustomerBookingFlowSheet.show(
                         context,
+                        subcategoryId: matchedSubcatId,
+                        subcategoryName: widget.venue.subCategory.isNotEmpty &&
+                                widget.venue.subCategory != 'General'
+                            ? widget.venue.subCategory
+                            : widget.venue.title,
                         categoryName: widget.venue.category,
                       );
                     },
