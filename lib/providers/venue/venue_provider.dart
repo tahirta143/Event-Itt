@@ -136,11 +136,22 @@ class VenueProvider extends ChangeNotifier {
             for (var s in subs) {
               if (s is Map<String, dynamic>) {
                 final subImg = s['image_url']?.toString() ?? '';
+                final rawPrice = s['base_price'] ?? s['price'];
+                final double? basePrice = rawPrice != null
+                    ? double.tryParse(rawPrice.toString())
+                    : null;
+                final desc = s['description']?.toString();
+
                 parsedSubCategories.add(SubCategoryModel(
                   id: s['id']?.toString() ?? '',
                   categoryId: catId,
+                  categoryName: catName,
                   title: s['subcategory_name']?.toString() ?? 'Subcategory',
-                  imageUrl: subImg.isNotEmpty ? _resolveUrl(subImg) : 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300&q=70',
+                  imageUrl: subImg.isNotEmpty
+                      ? _resolveUrl(subImg)
+                      : 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=300&q=70',
+                  basePrice: basePrice,
+                  description: desc,
                   count: 1,
                 ));
               }

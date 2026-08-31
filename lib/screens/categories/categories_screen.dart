@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../providers/venue/venue_provider.dart';
 import '../../providers/navigation/navigation_provider.dart';
 import '../../utils/colors/app_colors.dart';
+import '../customer/customer_booking_flow_sheet.dart';
+import 'category_detail_screen.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
@@ -71,8 +73,12 @@ class CategoriesScreenBody extends StatelessWidget {
               final cat = categories[index];
               return GestureDetector(
                 onTap: () {
-                  venueProvider.selectCategory(cat.title);
-                  Provider.of<NavigationProvider>(context, listen: false).setIndex(0);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CategoryDetailScreen(category: cat),
+                    ),
+                  );
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -134,44 +140,81 @@ class CategoriesScreenBody extends StatelessWidget {
             itemCount: venueProvider.subCategories.length,
             itemBuilder: (context, index) {
               final subCat = venueProvider.subCategories[index];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.cardWhite,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.lightGrey),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        subCat.imageUrl,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+              return InkWell(
+                onTap: () {
+                  CustomerBookingFlowSheet.show(
+                    context,
+                    subcategoryId: subCat.id,
+                    subcategoryName: subCat.title,
+                    categoryName: subCat.categoryName,
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.lightGrey),
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          subCat.imageUrl,
                           width: 60,
                           height: 60,
-                          color: AppColors.brandPink.withOpacity(0.1),
-                          child: const Icon(Icons.category_outlined, color: AppColors.brandPink, size: 24),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: 60,
+                            height: 60,
+                            color: AppColors.brandPink.withOpacity(0.1),
+                            child: const Icon(Icons.category_outlined, color: AppColors.brandPink, size: 24),
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(subCat.title, style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                          const SizedBox(height: 4),
-                          Text('Available on EventITT', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMedium)),
-                        ],
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(subCat.title, style: GoogleFonts.montserrat(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textDark)),
+                            const SizedBox(height: 4),
+                            Text(
+                              subCat.basePrice != null && subCat.basePrice! > 0
+                                  ? 'From PKR ${subCat.basePrice!.toStringAsFixed(0)}'
+                                  : (subCat.categoryName ?? 'Available on EventITT'),
+                              style: GoogleFonts.inter(fontSize: 12, color: AppColors.textMedium),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_outlined, size: 16, color: AppColors.textMedium),
-                  ],
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.brandPink,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                          minimumSize: const Size(60, 32),
+                        ),
+                        onPressed: () {
+                          CustomerBookingFlowSheet.show(
+                            context,
+                            subcategoryId: subCat.id,
+                            subcategoryName: subCat.title,
+                            categoryName: subCat.categoryName,
+                          );
+                        },
+                        child: Text(
+                          'Book',
+                          style: GoogleFonts.montserrat(fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

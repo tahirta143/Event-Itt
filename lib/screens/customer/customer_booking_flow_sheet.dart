@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../models/booking/booking_model.dart';
 import '../../providers/auth/customer_auth_provider.dart';
 import '../../providers/customer/customer_bookings_provider.dart';
 import '../../providers/venue/venue_provider.dart';
@@ -21,14 +22,14 @@ class CustomerBookingFlowSheet extends StatefulWidget {
     this.initialEventId,
   });
 
-  static Future<void> show(
+  static void show(
     BuildContext context, {
     String? subcategoryId,
     String? subcategoryName,
     String? categoryName,
     String? eventId,
   }) {
-    return showModalBottomSheet(
+    showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -95,6 +96,18 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
     super.initState();
     _selectedCategoryName = widget.initialCategoryName;
 
+    // If subcategory was pre-selected (by ID or by name), start directly at Step 1 (Pick Event)
+    if (widget.initialSubcategoryId != null &&
+        widget.initialSubcategoryId!.isNotEmpty) {
+      _selectedSubcategoryId = widget.initialSubcategoryId;
+      _selectedSubcategoryName = widget.initialSubcategoryName;
+      _currentStep = 1;
+    } else if (widget.initialSubcategoryName != null &&
+        widget.initialSubcategoryName!.isNotEmpty) {
+      _selectedSubcategoryName = widget.initialSubcategoryName;
+      _currentStep = 1;
+    }
+
     if (widget.initialEventId != null && widget.initialEventId!.isNotEmpty) {
       _selectedEventIds.add(widget.initialEventId!);
     }
@@ -108,21 +121,41 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
         await venueProvider.fetchCategories();
       }
 
-      if (mounted &&
-          widget.initialSubcategoryId != null &&
-          widget.initialSubcategoryId!.isNotEmpty) {
-        final matches = venueProvider.subCategories.any(
-            (s) => s.id == widget.initialSubcategoryId);
-        if (matches) {
+      if (!mounted) return;
+
+      // If we have an ID but need the name
+      if (_selectedSubcategoryId != null &&
+          (_selectedSubcategoryName == null ||
+              _selectedSubcategoryName!.isEmpty)) {
+        try {
+          final matched = venueProvider.subCategories
+              .firstWhere((s) => s.id == _selectedSubcategoryId);
           setState(() {
-            _selectedSubcategoryId = widget.initialSubcategoryId;
-            _selectedSubcategoryName = widget.initialSubcategoryName ??
-                venueProvider.subCategories
-                    .firstWhere((s) => s.id == widget.initialSubcategoryId)
-                    .title;
-            _currentStep = 1; // Start at event selection
+            _selectedSubcategoryName = matched.title;
+            _selectedCategoryName ??= matched.categoryName;
           });
-        }
+        } catch (_) {}
+      }
+
+      // If we have a name but need the ID
+      if (_selectedSubcategoryId == null &&
+          _selectedSubcategoryName != null &&
+          _selectedSubcategoryName!.isNotEmpty) {
+        try {
+          final matched = venueProvider.subCategories.firstWhere(
+            (s) =>
+                s.title.toLowerCase() ==
+                    _selectedSubcategoryName!.toLowerCase() ||
+                (s.categoryName != null &&
+                    _selectedCategoryName != null &&
+                    s.categoryName!.toLowerCase() ==
+                        _selectedCategoryName!.toLowerCase()),
+          );
+          setState(() {
+            _selectedSubcategoryId = matched.id;
+            _selectedCategoryName ??= matched.categoryName;
+          });
+        } catch (_) {}
       }
     });
   }
@@ -225,22 +258,21 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
       child: Column(
         children: [
           // Drag Handle
-          const SizedBox(height: 12),
           Center(
             child: Container(
-              width: 40,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.lightGrey,
+                color: AppColors.borderGrey,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const SizedBox(height: 12),
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -255,6 +287,7 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
                         color: AppColors.textDark,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       _stepSubtitle(),
                       style: GoogleFonts.inter(
@@ -265,19 +298,18 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded,
-                      color: AppColors.textMedium),
                   onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close_rounded,
+                      color: AppColors.textDark, size: 22),
                 ),
               ],
             ),
           ),
 
-          // Step Progress Bar (Only during steps 0-2)
+          // Multi-Step Progress Indicator
           if (_currentStep < 3) ...[
-            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
               child: Row(
                 children: [
                   _buildStepDot(0, 'Service'),
@@ -288,32 +320,37 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
                 ],
               ),
             ),
+            const Divider(height: 1, color: AppColors.lightGrey),
           ],
-
-          const Divider(height: 24, thickness: 1, color: AppColors.lightGrey),
 
           // Error Banner
           if (_error != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _error!,
-                  style: GoogleFonts.inter(fontSize: 12, color: Colors.red),
-                ),
+            Container(
+              margin: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded,
+                      color: Colors.red, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _error!,
+                      style: GoogleFonts.inter(
+                          fontSize: 12, color: Colors.red.shade800),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
           ],
 
-          // Step Content
+          // Step Body
           Expanded(
             child: _buildCurrentStepContent(),
           ),
@@ -343,7 +380,7 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
   String _stepSubtitle() {
     switch (_currentStep) {
       case 0:
-        return 'Step 1 of 3 — Pick the subcategory or service';
+        return 'Step 1 of 3 — Pick a category & offering';
       case 1:
         return 'Step 2 of 3 — Attach to your wedding event(s)';
       case 2:
@@ -432,91 +469,154 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
   }
 
   // ---------------------------------------------------------------------------
-  // STEP 0: Choose Service / Subcategory
+  // STEP 0: Choose Service / Subcategory (Grouped by Category)
   // ---------------------------------------------------------------------------
   Widget _buildStep0ChooseService() {
     final venueProvider = context.watch<VenueProvider>();
+    final categories =
+        venueProvider.categories.where((c) => c.id != 'all').toList();
+
+    if (venueProvider.isLoading && categories.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.brandPink),
+        ),
+      );
+    }
 
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-      itemCount: venueProvider.subCategories.length,
-      itemBuilder: (context, index) {
-        final sub = venueProvider.subCategories[index];
-        final isSelected = _selectedSubcategoryId == sub.id;
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      itemCount: categories.length,
+      itemBuilder: (context, catIdx) {
+        final cat = categories[catIdx];
+        final catSubcategories = venueProvider.subCategories
+            .where((s) => s.categoryId == cat.id)
+            .toList();
 
-        return InkWell(
-          onTap: () {
-            setState(() {
-              _selectedSubcategoryId = sub.id;
-              _selectedSubcategoryName = sub.title;
-            });
-          },
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.brandPink.withOpacity(0.06)
-                  : AppColors.cardWhite,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected ? AppColors.brandPink : AppColors.borderGrey,
-                width: isSelected ? 1.5 : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    sub.imageUrl,
-                    width: 54,
-                    height: 54,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 54,
-                      height: 54,
-                      color: AppColors.lightGrey,
-                      child: const Icon(Icons.room_service_outlined,
-                          color: AppColors.brandPink),
+        if (catSubcategories.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Category Section Header
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: AppColors.brandPink,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(width: 8),
+                  Text(
+                    cat.title,
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '(${catSubcategories.length})',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      color: AppColors.textMedium,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Subcategory Cards under this Category
+            ...catSubcategories.map((sub) {
+              final isSelected = _selectedSubcategoryId == sub.id;
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedSubcategoryId = sub.id;
+                    _selectedSubcategoryName = sub.title;
+                    _selectedCategoryName = cat.title;
+                    _error = null;
+                    // Instantly advance to Step 1 (Pick Event) like React!
+                    _currentStep = 1;
+                  });
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.brandPink.withOpacity(0.06)
+                        : AppColors.cardWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.brandPink
+                          : AppColors.borderGrey,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
                     children: [
-                      Text(
-                        sub.title,
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          sub.imageUrl,
+                          width: 52,
+                          height: 52,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            width: 52,
+                            height: 52,
+                            color: AppColors.brandPink.withOpacity(0.1),
+                            child: const Icon(Icons.room_service_outlined,
+                                color: AppColors.brandPink, size: 22),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${sub.count} Available Offerings',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: AppColors.textMedium,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              sub.title,
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              sub.basePrice != null && sub.basePrice! > 0
+                                  ? 'From PKR ${sub.basePrice!.toStringAsFixed(0)}'
+                                  : 'Price on quotation',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: AppColors.primaryGold,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const Icon(Icons.arrow_forward_ios_rounded,
+                          size: 14, color: AppColors.textMedium),
                     ],
                   ),
                 ),
-                if (isSelected)
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppColors.brandPink, size: 22)
-                else
-                  const Icon(Icons.radio_button_unchecked_rounded,
-                      color: AppColors.textLight, size: 22),
-              ],
-            ),
-          ),
+              );
+            }),
+            const SizedBox(height: 10),
+          ],
         );
       },
     );
@@ -535,29 +635,49 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Service summary pill
+          // Service summary pill with "Change" option
           if (_selectedSubcategoryName != null) ...[
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
                 color: AppColors.primaryGold.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.primaryGold.withOpacity(0.3)),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primaryGold.withOpacity(0.35)),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.stars_rounded,
-                      size: 16, color: AppColors.primaryGold),
-                  const SizedBox(width: 6),
-                  Text(
-                    _selectedCategoryName != null
-                        ? 'Selected: $_selectedCategoryName › $_selectedSubcategoryName'
-                        : 'Selected: $_selectedSubcategoryName',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        const Icon(Icons.stars_rounded,
+                            size: 18, color: AppColors.primaryGold),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _selectedCategoryName != null
+                                ? '$_selectedCategoryName › $_selectedSubcategoryName'
+                                : _selectedSubcategoryName!,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => setState(() => _currentStep = 0),
+                    child: Text(
+                      'Change',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.brandPink,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                 ],
@@ -706,7 +826,7 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
                                   if (ev.eventDate != null &&
                                       ev.eventDate!.isNotEmpty) ...[
                                     Text(
-                                      '📅 ${ev.eventDate}',
+                                      '📅 ${ev.eventDate!.length >= 10 ? ev.eventDate!.substring(0, 10) : ev.eventDate}',
                                       style: GoogleFonts.inter(
                                         fontSize: 11,
                                         color: AppColors.textMedium,
@@ -718,19 +838,12 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
                                     '${ev.bookingCount} Bookings',
                                     style: GoogleFonts.montserrat(
                                       fontSize: 10,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.bold,
                                       color: AppColors.primaryGold,
                                     ),
                                   ),
                                 ],
                               ),
-                              if (ev.venue != null && ev.venue!.isNotEmpty)
-                                Text(
-                                  '📍 ${ev.venue}',
-                                  style: GoogleFonts.inter(
-                                      fontSize: 10,
-                                      color: AppColors.textLight),
-                                ),
                             ],
                           ),
                         ),
@@ -738,7 +851,7 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
                           value: isSelected,
                           activeColor: AppColors.brandPink,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(5),
                           ),
                           onChanged: (_) => _handleToggleEvent(ev),
                         ),
@@ -750,39 +863,35 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
             ),
 
             const SizedBox(height: 8),
-            // "+ Add Another Event" Button
+            // Add New Event Shortcut
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(
-                    color: AppColors.brandPink, style: BorderStyle.solid),
+                foregroundColor: AppColors.brandPink,
+                side: BorderSide(color: AppColors.brandPink.withOpacity(0.4)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               ),
               onPressed: _openCreateEvent,
-              icon: const Icon(Icons.add_rounded,
-                  color: AppColors.brandPink, size: 18),
+              icon: const Icon(Icons.add_rounded, size: 18),
               label: Text(
-                'Add Another Wedding Event',
+                'Add Another Event',
                 style: GoogleFonts.montserrat(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.brandPink,
                 ),
               ),
             ),
           ],
-
-          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
   // ---------------------------------------------------------------------------
-  // STEP 2: Booking Details Form
+  // STEP 2: Booking Details
   // ---------------------------------------------------------------------------
   Widget _buildStep2Details() {
     return SingleChildScrollView(
@@ -791,108 +900,129 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Event Date Selection
+          // Event Date Picker
           Text(
-            'Event Date',
+            'Event Date *',
             style: GoogleFonts.montserrat(
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: AppColors.textDark,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           InkWell(
             onTap: () async {
               final picked = await showDatePicker(
                 context: context,
-                initialDate: _selectedDate ??
-                    DateTime.now().add(const Duration(days: 14)),
+                initialDate: _selectedDate ?? DateTime.now().add(const Duration(days: 30)),
                 firstDate: DateTime.now(),
-                lastDate: DateTime.now().add(const Duration(days: 1095)),
+                lastDate: DateTime.now().add(const Duration(days: 730)),
               );
               if (picked != null) {
                 setState(() => _selectedDate = picked);
               }
             },
+            borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.borderGrey),
-                borderRadius: BorderRadius.circular(14),
                 color: AppColors.cardWhite,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderGrey),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    _selectedDate != null
-                        ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                        : 'Tap to pick event date',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: _selectedDate != null
-                          ? AppColors.textDark
-                          : AppColors.textMedium,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_month_outlined,
+                          color: AppColors.brandPink, size: 20),
+                      const SizedBox(width: 12),
+                      Text(
+                        _selectedDate != null
+                            ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                            : 'Select celebration date',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: _selectedDate != null
+                              ? AppColors.textDark
+                              : AppColors.textLight,
+                          fontWeight: _selectedDate != null
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
                   ),
-                  const Icon(Icons.calendar_month_outlined,
-                      size: 18, color: AppColors.brandPink),
+                  const Icon(Icons.arrow_drop_down_rounded,
+                      color: AppColors.textMedium),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
           // Guest Count Stepper
           Text(
-            'Estimated Guest Count',
+            'Estimated Guests',
             style: GoogleFonts.montserrat(
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: AppColors.textDark,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderGrey),
-              borderRadius: BorderRadius.circular(14),
               color: AppColors.cardWhite,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.borderGrey),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline_rounded,
-                      color: AppColors.brandPink),
-                  onPressed: () {
-                    if (_guestCount > 25) {
-                      setState(() => _guestCount -= 25);
-                    }
-                  },
+                Row(
+                  children: [
+                    const Icon(Icons.people_alt_outlined,
+                        color: AppColors.brandPink, size: 20),
+                    const SizedBox(width: 12),
+                    Text(
+                      '$_guestCount Guests',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '$_guestCount Guests',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline_rounded,
-                      color: AppColors.brandPink),
-                  onPressed: () {
-                    setState(() => _guestCount += 25);
-                  },
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        if (_guestCount > 25) {
+                          setState(() => _guestCount -= 25);
+                        }
+                      },
+                      icon: const Icon(Icons.remove_circle_outline_rounded,
+                          color: AppColors.brandPink),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        setState(() => _guestCount += 25);
+                      },
+                      icon: const Icon(Icons.add_circle_outline_rounded,
+                          color: AppColors.brandPink),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
 
-          // Special Requests Text Area
+          // Special Requests & Notes
           Text(
             'Special Requests / Notes (Optional)',
             style: GoogleFonts.montserrat(
@@ -901,98 +1031,56 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
               color: AppColors.textDark,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           TextField(
             controller: _notesController,
             maxLines: 3,
             decoration: InputDecoration(
-              hintText: 'Theme preferences, timing, custom catering requirements...',
+              hintText:
+                  'e.g. Preference for stage decor colors, dietary requirements, camera angles, timing...',
               hintStyle:
-                  GoogleFonts.inter(fontSize: 13, color: AppColors.textLight),
+                  GoogleFonts.inter(fontSize: 12, color: AppColors.textLight),
+              filled: true,
+              fillColor: AppColors.cardWhite,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 borderSide: const BorderSide(color: AppColors.borderGrey),
               ),
-              contentPadding: const EdgeInsets.all(14),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.borderGrey),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide:
+                    const BorderSide(color: AppColors.brandPink, width: 1.5),
+              ),
             ),
           ),
-          const SizedBox(height: 18),
-
-          // Booking Summary Preview Card
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.lightBackground,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.borderGrey),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Booking Summary',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (_selectedSubcategoryName != null)
-                  _buildSummaryItem('Service', _selectedSubcategoryName!),
-                _buildSummaryItem('Events Selected',
-                    '${_selectedEventIds.length} Event(s)'),
-                if (_selectedDate != null)
-                  _buildSummaryItem('Event Date',
-                      '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'),
-                _buildSummaryItem('Guests', '$_guestCount'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryItem(String label, String val) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label,
-              style: GoogleFonts.inter(
-                  fontSize: 12, color: AppColors.textMedium)),
-          Text(val,
-              style: GoogleFonts.montserrat(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark)),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
   // ---------------------------------------------------------------------------
-  // STEP 3: Success Screen
+  // STEP 3: Success Confirmation
   // ---------------------------------------------------------------------------
   Widget _buildStep3Success() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppColors.successGreen.withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check_circle_rounded,
-                  color: AppColors.successGreen, size: 44),
+                  color: AppColors.successGreen, size: 64),
             ),
             const SizedBox(height: 20),
             Text(
@@ -1007,29 +1095,32 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
             Text(
               _createdCount > 1
                   ? '$_createdCount booking requests were created and assigned to your events.'
-                  : 'Your booking request has been submitted for vendor review.',
+                  : 'Your booking request for ${_selectedSubcategoryName ?? 'this service'} has been submitted.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(fontSize: 13, color: AppColors.textMedium),
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.textMedium,
+              ),
             ),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.brandPink,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandPink,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(
-                  'View in My Bookings',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(
+                'View My Bookings',
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -1043,70 +1134,69 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
   // Bottom Action Bar
   // ---------------------------------------------------------------------------
   Widget _buildBottomActionBar() {
-    final canProceed = _canProceed();
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
-            offset: const Offset(0, -3),
             blurRadius: 10,
+            offset: const Offset(0, -3),
           ),
         ],
       ),
       child: Row(
         children: [
-          if (_currentStep > 0) ...[
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+          if (_currentStep > 0)
+            Expanded(
+              flex: 1,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textDark,
+                  side: const BorderSide(color: AppColors.borderGrey),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                onPressed: () => setState(() => _currentStep--),
+                child: Text(
+                  'Back',
+                  style: GoogleFonts.montserrat(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              onPressed: () => setState(() => _currentStep--),
-              child: const Icon(Icons.arrow_back_rounded,
-                  color: AppColors.textDark),
             ),
-            const SizedBox(width: 12),
-          ],
+          if (_currentStep > 0) const SizedBox(width: 12),
           Expanded(
+            flex: 2,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brandPink,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 elevation: 2,
               ),
-              onPressed: canProceed
-                  ? () {
-                      if (_currentStep == 2) {
-                        _submitBooking();
-                      } else {
-                        setState(() => _currentStep++);
-                      }
-                    }
-                  : null,
+              onPressed: _submitting ? null : _handlePrimaryButton,
               child: _submitting
                   ? const SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     )
                   : Text(
                       _currentStep == 2 ? 'Submit Booking Request' : 'Continue',
                       style: GoogleFonts.montserrat(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1117,17 +1207,27 @@ class _CustomerBookingFlowSheetState extends State<CustomerBookingFlowSheet> {
     );
   }
 
-  bool _canProceed() {
-    if (_submitting) return false;
-    switch (_currentStep) {
-      case 0:
-        return _selectedSubcategoryId != null;
-      case 1:
-        return _selectedEventIds.isNotEmpty;
-      case 2:
-        return _selectedDate != null;
-      default:
-        return true;
+  void _handlePrimaryButton() {
+    if (_currentStep == 0) {
+      if (_selectedSubcategoryId == null) {
+        setState(() => _error = 'Please pick a subcategory to continue.');
+        return;
+      }
+      setState(() {
+        _error = null;
+        _currentStep = 1;
+      });
+    } else if (_currentStep == 1) {
+      if (_selectedEventIds.isEmpty) {
+        setState(() => _error = 'Please select at least one wedding event.');
+        return;
+      }
+      setState(() {
+        _error = null;
+        _currentStep = 2;
+      });
+    } else if (_currentStep == 2) {
+      _submitBooking();
     }
   }
 }
